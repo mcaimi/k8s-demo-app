@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: insecure-registry-config
+
+data:
+  daemon.json: |
+    {
+      "insecure-registries" : [ "registry.apps.kubernetes.local" ]
+    }
+  50-insecure-registries.conf: |
+    [Service]
+    Environment='DOCKER_OPTS=--insecure-registry="registry.apps.kubernetes.local"'

@@ -1,0 +1,90 @@
+def getAgentPodYaml() {
+    agentYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  containers:
+    - name: jnlp
+      image: docker.io/jenkins/jnlp-slave:latest
+      imagePullPolicy: Always
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
+    - name: docker-in-docker
+      image: docker.io/library/docker:19.03.5-dind
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: docker-registry-config
+          mountPath: /etc/docker/daemon.json
+          subPath: daemon.json
+        - name: docker-registry-config
+          mountPath: /etc/systemd/system/docker.service.d/50-insecure-registries.conf
+          subPath: 50-insecure-registries.conf
+        - name: dind-storage
+          mountPath: /var/lib/docker
+  volumes:
+    - name: docker-registry-config
+      configMap:
+        name: insecure-registry-config
+        items:
+        - key: daemon.json
+          path: daemon.json
+        - key: 50-insecure-registries.conf
+          path: 50-insecure-registries.conf
+    - name: dind-storage
+      emptyDir: {}
+    """
+    return agentYaml
+}
+
+def REGISTRY_HOSTNAME = 'registry.apps.kubernetes.local'
+def LABEL = 'latest'
+def ARTIFACT_NAME = 'maven-agent'
+
+pipeline {
+    agent {
+      kubernetes {
+        label "jenkins-slave-dind"
+        defaultContainer "jnlp"
+        yaml getAgentPodYaml()
+      }
+    }
+    stages {
+        stage ("BUILD DOCKER IMAGE") {
+            steps {
+              container("docker-in-docker") {
+                echo "BUILDING CONTAINER ${ARTIFACT_NAME}"
+                sh "cat containers/Dockerfile.${ARTIFACT_NAME} | docker build -t ${ARTIFACT_NAME}:${LABEL} -"
+              }
+            }
+        }
+
+        stage ("TAG CONTAINER") {
+          steps {
+            container("docker-in-docker") {
+              echo "TAGGING CONTAINER: ${REGISTRY_HOSTNAME}/${ARTIFACT_NAME}:${LABEL}"
+              sh "docker tag ${ARTIFACT_NAME}:${LABEL} ${REGISTRY_HOSTNAME}/${ARTIFACT_NAME}:${LABEL}"
+            }
+          }
+        }
+
+        stage ("PUSH CONTAINER") {
+          steps {
+            container("docker-in-docker") {
+              echo "PUSHING CONTAINER: ${REGISTRY_HOSTNAME}/${ARTIFACT_NAME}:${LABEL}"
+              sh "docker push ${REGISTRY_HOSTNAME}/${ARTIFACT_NAME}:${LABEL}"
+            }
+          }
+        }
+    }
+}
