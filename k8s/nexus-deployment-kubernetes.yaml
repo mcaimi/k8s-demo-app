@@ -2,44 +2,40 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jenkins-claim
+  name: nexus-claim
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 2Gi
   storageClassName: "standard"
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins-master
+  name: nexus
   namespace: jenkins
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: jenkins-master
+      app: nexus
   template:
     metadata:
       labels:
-        app: jenkins-master
+        app: nexus
     spec:
       containers:
-      - image: docker.io/jenkins/jenkins:latest
+      - image: docker.io/sonatype/nexus3:latest
         imagePullPolicy: Always
-        name: jenkins-master
+        name: nexus
         volumeMounts:
-          - mountPath: "/var/jenkins_home"
-            name: jenkins-volume
+          - mountPath: "/nexus-data"
+            name: nexus-volume
         ports:
-        - containerPort: 8080
+        - containerPort: 8081
           protocol: TCP
-          name: http
-        - containerPort: 50000
-          protocol: TCP
-          name: jnlp
         resources:
           limits:
             cpu: "2"
@@ -48,9 +44,9 @@ spec:
             memory: "2Gi"
             cpu: "1"
       volumes:
-        - name: jenkins-volume
+        - name: nexus-volume
           persistentVolumeClaim:
-            claimName: jenkins-claim
+            claimName: nexus-claim
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -60,20 +56,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jenkins-master-service
+  name: nexus-service
   namespace: jenkins
 spec:
   ports:
-  - port: 80
-    name: http
+  - port: 81
     protocol: TCP
-    targetPort: 8080
-  - port: 50000
-    name: jnlp
-    protocol: TCP
-    targetPort: 50000
+    targetPort: 8081
   selector:
-    app: jenkins-master
+    app: nexus
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -82,31 +73,14 @@ kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-  name: jenkins-master-route
+  name: nexus-route
   namespace: jenkins
 spec:
   rules:
-  - host: jenkins.apps.kubernetes.local
+  - host: nexus.apps.kubernetes.local
     http:
       paths:
       - backend:
-          serviceName: jenkins-master-service
-          servicePort: 80
-        path: /
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  name: jenkins-jnlp-route
-  namespace: jenkins
-spec:
-  rules:
-  - host: jenkins-jnlp.apps.kubernetes.local
-    http:
-      paths:
-      - backend:
-          serviceName: jenkins-master-service
-          servicePort: 50000
+          serviceName: nexus-service
+          servicePort: 81
         path: /

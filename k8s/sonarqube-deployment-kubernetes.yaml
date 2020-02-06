@@ -1,0 +1,139 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-conf-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: "standard"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-data-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: "standard"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-logs-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: "standard"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-extensions-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: "standard"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube
+  namespace: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarqube
+  template:
+    metadata:
+      labels:
+        app: sonarqube
+    spec:
+      containers:
+      - image: docker.io/library/sonarqube:latest
+        imagePullPolicy: Always
+        name: sonarqube
+        volumeMounts:
+          - mountPath: "/opt/sonarqube/conf"
+            name: sonar-conf-volume
+          - mountPath: "/opt/sonarqube/data"
+            name: sonar-data-volume
+          - mountPath: "/opt/sonarqube/logs"
+            name: sonar-logs-volume
+          - mountPath: "/opt/sonarqube/extensions"
+            name: sonar-extensions-volume
+        ports:
+        - containerPort: 9000
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+      volumes:
+        - name: sonar-conf-volume
+          persistentVolumeClaim:
+            claimName: sonar-conf-claim
+        - name: sonar-data-volume
+          persistentVolumeClaim:
+            claimName: sonar-data-claim
+        - name: sonar-logs-volume
+          persistentVolumeClaim:
+            claimName: sonar-logs-claim
+        - name: sonar-extensions-volume
+          persistentVolumeClaim:
+            claimName: sonar-extensions-claim
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube-service
+  namespace: jenkins
+spec:
+  ports:
+  - port: 90
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app: sonarqube
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: sonarqube-route
+  namespace: jenkins
+spec:
+  rules:
+  - host: sonar.apps.kubernetes.local
+    http:
+      paths:
+      - backend:
+          serviceName: sonarqube-service
+          servicePort: 90
+        path: /
+
+
