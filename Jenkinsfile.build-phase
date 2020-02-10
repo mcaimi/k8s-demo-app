@@ -106,7 +106,7 @@ pipeline {
                file: "target/${ARTIFACT_ID}-${VERSION}.${PACKAGING}"
               ],
               [
-               artifactId: "${ARTIFACT_ID}",
+               artifactId: "${ARTIFACT_ID}-runner",
                type: "${PACKAGING}",
                classifier: "",
                file: "target/${ARTIFACT_ID}-${VERSION}-runner.${PACKAGING}"
