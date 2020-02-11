@@ -1,0 +1,17 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: devops-demo-pv
+  namespace: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 10Gi
+  hostPath:
+    path: /tmp/kubevolume
+    type: ""
+  storageClassName: "standard"
+  volumeMode: "filesystem"
+
