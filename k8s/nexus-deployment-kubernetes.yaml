@@ -73,6 +73,7 @@ kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: 0m
   name: nexus-route
   namespace: jenkins
 spec:
