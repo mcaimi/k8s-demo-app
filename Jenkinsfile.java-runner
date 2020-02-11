@@ -24,7 +24,7 @@ pipeline {
       steps {
         container("docker-in-docker") {
           echo "BUILDING CONTAINER ${params.IMAGE_NAME} (${env.BUILD_ID})"
-          sh "docker build -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
+          sh "docker build --build-arg nexus_repo_url=${params.REGISTRY_URL} --build-arg artifact_name=${params.ARTIFACT_NAME} -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
         }
       }
     }
@@ -52,10 +52,10 @@ pipeline {
         container("docker-in-docker") {
           echo "TAGGING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev (${env.BUILD_ID})"
           sh "docker tag ${params.IMAGE_NAME}:dev ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
-          sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev
+          sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
         }
         container("jnlp") {
-          echo "DEPLOYING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})
+          echo "DEPLOYING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
         }
       }
     }
