@@ -1,0 +1,4 @@
+resources:
+- java-runner-deployment-kubernetes.yaml
+- java-runner-service-kubernetes.yaml
+- java-runner-ingress-kubernetes.yaml

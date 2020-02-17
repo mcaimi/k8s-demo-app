@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: java-runner
+  template:
+    metadata:
+      labels:
+        app: java-runner
+    spec:
+      containers:
+      - image: java-runner
+        imagePullPolicy: Always
+        name: k8s-java-runner
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+

@@ -1,0 +1,17 @@
+bases:
+  - ../common
+namespace: preprod
+namePrefix: preprod-
+nameSuffix: "-001"
+commonLabels:
+  app: k8s-demo-app
+commonAnnotations:
+  deployedBy: "jenkins"
+  chain: "devops-pipeline"
+  environment: "noprod"
+patchesStrategicMerge:
+- mem-sizing.yaml
+images:
+- name: java-runner
+  newName: registry.apps.kubernetes.local/java-runner
+  newTag: preprod

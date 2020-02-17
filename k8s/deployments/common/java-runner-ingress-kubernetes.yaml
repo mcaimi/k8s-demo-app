@@ -1,0 +1,17 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: 0m
+  name: java-runner-route
+spec:
+  rules:
+  - host: k8s-demo.apps.kubernetes.local
+    http:
+      paths:
+      - backend:
+          serviceName: java-runner-service
+          servicePort: 80
+        path: /
