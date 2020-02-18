@@ -30,13 +30,18 @@ pipeline {
       }
     }
 
-    stage ("TAG AND DEPLOY IN DEV") {
+    stage ("TAG IMAGE FOR DEV DEPLOYMENT") {
       steps {
         container("docker-in-docker") {
           echo "TAGGING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev (${env.BUILD_ID})"
           sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
           sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
         }
+      }
+    }
+
+    stage ("DEPLOY AND TEST IN DEV") {
+      steps {
         container("jnlp") {
           echo "DEPLOYING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
           sh "kubectl apply -k k8s/deployments/dev/"
@@ -47,23 +52,30 @@ pipeline {
         }
       }
       post {
-        success {
-          container("docker-in-docker") {
-            echo "PROMOTING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev to PREPROD (${env.BUILD_ID})"
-            sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
-            sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
-          }
-        }
         failure {
           container("jnlp") {
             echo "DEV DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
             sh "kubectl delete -k k8s/deployments/dev/"
           }
+          container("docker-in-docker") {
+            echo "UNTAGGING IMAGE FROM DEV ENVIRONMENT"
+            sh "docker rmi ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
+          }
         }
       }
     }
 
-    stage ("DEPLOY IN PREPROD") {
+    stage ("PROMOTE IMAGE TO PREPROD ENVIRONMENT") {
+      steps {
+        container("docker-in-docker") {
+          echo "TAGGING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod (${env.BUILD_ID})"
+          sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
+          sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
+        }
+      }
+    }
+
+    stage ("DEPLOY AND TEST IN PREPROD") {
       steps {
         container("jnlp") {
           echo "DEPLOYING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
@@ -75,18 +87,25 @@ pipeline {
         }
       }
       post {
-        success {
-          container("docker-in-docker") {
-            echo "PROMOTING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev to PROD (${env.BUILD_ID})"
-            sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
-            sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
-          }
-        }
         failure {
           container("jnlp") {
             echo "PREPROD DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
             sh "kubectl delete -k k8s/deployments/preprod/"
           }
+          container("docker-in-docker") {
+            echo "UNTAGGING IMAGE FROM PREPROD ENVIRONMENT"
+            sh "docker rmi ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
+          }
+        }
+      }
+    }
+
+    stage ("PROMOTE PREPROD IMAGE TO PROD") {
+      steps {
+        container("docker-in-docker") {
+          echo "PROMOTING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev to PROD (${env.BUILD_ID})"
+          sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
+          sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
         }
       }
     }
