@@ -1,0 +1,155 @@
+pipeline {
+  parameters { 
+    string(name: 'REGISTRY_URL', defaultValue: 'registry.apps.kubernetes.local', description: 'The docker registry to push the image to')
+    string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the built application container')
+    string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the built application container')
+    string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
+  }
+
+  agent {
+    kubernetes {
+      label "jenkins-slave-dind"
+      defaultContainer "jnlp"
+      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}")
+    }
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  stages {
+    stage ("PULL SOFTWARE IMAGE FROM REMOTE REPOSITORY") {
+      steps {
+        container("docker-in-docker") {
+          echo "Pulling image from ${params.REGISTRY_URL}...  (${env.BUILD_ID})"
+          sh "docker pull ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
+          sh "docker images"
+        }
+      }
+    }
+
+    stage ("TAG AND DEPLOY IN DEV") {
+      steps {
+        container("docker-in-docker") {
+          echo "TAGGING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev (${env.BUILD_ID})"
+          sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
+          sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev"
+        }
+        container("jnlp") {
+          echo "DEPLOYING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
+          sh "kubectl apply -k k8s/deployments/dev/"
+        }
+        container("jnlp") {
+          echo "TESTING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
+          sh "bash k8s/deployments/dev/tests.sh"
+        }
+      }
+      post {
+        success {
+          container("docker-in-docker") {
+            echo "PROMOTING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev to PREPROD (${env.BUILD_ID})"
+            sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
+            sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod"
+          }
+        }
+        failure {
+          container("jnlp") {
+            echo "DEV DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
+            sh "kubectl delete -k k8s/deployments/dev/"
+          }
+        }
+      }
+    }
+
+    stage ("DEPLOY IN PREPROD") {
+      steps {
+        container("jnlp") {
+          echo "DEPLOYING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
+          sh "kubectl apply -k k8s/deployments/preprod/"
+        }
+        container("jnlp") {
+          echo "TESTING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
+          sh "bash k8s/deployments/preprod/tests.sh"
+        }
+      }
+      post {
+        success {
+          container("docker-in-docker") {
+            echo "PROMOTING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:dev to PROD (${env.BUILD_ID})"
+            sh "docker tag ${params.REGISTRY_URL}/${params.IMAGE_NAME}:preprod ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
+            sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
+          }
+        }
+        failure {
+          container("jnlp") {
+            echo "PREPROD DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
+            sh "kubectl delete -k k8s/deployments/preprod/"
+          }
+        }
+      }
+    }
+  }
+
+  // cleanup
+  post {
+    success {
+      echo "CLEANING UP... (${env.BUILD_ID})"
+      sh "kubectl delete -k k8s/deployments/dev/"
+      sh "kubectl delete -k k8s/deployments/preprod/"
+    }
+  }
+}
+
+def k8sAgentPodYaml(serviceAccount) {
+  dockerInDockerYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: SA_NAME
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: registry.apps.kubernetes.local/maven-agent:latest
+      imagePullPolicy: Always
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
+    - name: docker-in-docker
+      image: docker.io/library/docker:19.03.5-dind
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: docker-registry-config
+          mountPath: /etc/docker/daemon.json
+          subPath: daemon.json
+        - name: docker-registry-config
+          mountPath: /etc/systemd/system/docker.service.d/50-insecure-registries.conf
+          subPath: 50-insecure-registries.conf
+        - name: dind-storage
+          mountPath: /var/lib/docker
+  volumes:
+    - name: docker-registry-config
+      configMap:
+        name: insecure-registry-config
+        items:
+        - key: daemon.json
+          path: daemon.json
+        - key: 50-insecure-registries.conf
+          path: 50-insecure-registries.conf
+    - name: dind-storage
+      emptyDir: {}
+    """
+
+    return dockerInDockerYaml.replaceAll(~/SA_NAME/, serviceAccount)
+}

@@ -5,8 +5,48 @@ metadata:
   name: jenkins
   namespace: jenkins
 rules:
+- apiGroups: ["*"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
-  resources: ["pods"]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins
+  namespace: dev
+rules:
+- apiGroups: ["*"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins
+  namespace: preprod
+rules:
+- apiGroups: ["*"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]

@@ -1,0 +1,14 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: java-runner-route
+spec:
+  rules:
+  - host: k8s-demo-dev.apps.kubernetes.local
+    http:
+      paths:
+      - backend:
+          serviceName: java-runner-service
+          servicePort: 80
+        path: /
