@@ -11,7 +11,7 @@ import org.jboss.resteasy.annotations.jaxrs.PathParam;
 @Path("/services")
 public class TimeWasterResource {
     @Inject
-    private TimeWasterService timeWaster;
+    TimeWasterService timeWaster;
     
     @GET
     @Path("/delay/{milliseconds}")

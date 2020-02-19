@@ -22,7 +22,8 @@ public class HelloResourceTest {
     public void testHelloNameEndpoint() {
         String randomName = UUID.randomUUID().toString();
         given()
-            .when().get("/hello/" + randomName)
+            .pathParam("name", randomName)
+            .when().get("/hello/{name}")
             .then()
                 .statusCode(200)
                 .body(is("Hello " + randomName + "!"));
