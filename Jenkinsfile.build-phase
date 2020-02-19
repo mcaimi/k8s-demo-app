@@ -63,6 +63,12 @@ pipeline {
         container('jnlp') {
           echo "Running maven jacoco plugin... (${env.BUILD_ID})"
           sh "./mvnw jacoco:report"
+          jacoco( 
+                execPattern: 'target/*.exec',
+                classPattern: 'target/classes',
+                sourcePattern: 'src/main/java',
+                exclusionPattern: 'src/test*'
+          )
         }
       }
     }
