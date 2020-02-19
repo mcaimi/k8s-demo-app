@@ -58,6 +58,15 @@ pipeline {
       }
     }
 
+    stage ("MVN: CODE COVERAGE") {
+      steps {
+        container('jnlp') {
+          echo "Running maven jacoco plugin... (${env.BUILD_ID})"
+          sh "./mvnw jacoco:report"
+        }
+      }
+    }
+
     stage ("SONAR: SONARQUBE ANALYSIS") {
       steps {
         container('jnlp') {
