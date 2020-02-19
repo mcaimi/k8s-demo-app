@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 public class TimeWasterResourceTest {
 
     @Test
-    public void testTimeWasterOKEndpoint() {
+    public void testWasteTimeOKEndpoint() {
         given()
           .when().get("/services/delay/1000")
           .then()
@@ -19,7 +19,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testTimeWasterOKLongWaitEndpoint() {
+    public void testWasteTimeOKLongWaitEndpoint() {
         given()
           .when().get("/services/delay/2500")
           .then()
@@ -28,7 +28,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testTimeWasterWithCodeOKEndpoint() {
+    public void testWasteTimeWithCodeOKEndpoint() {
         given()
           .when().get("/services/delay/1000/200")
           .then()
@@ -37,7 +37,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testTimeWasterWithCodeNotFoundEndpoint() {
+    public void testWasteTimeWithCodeNotFoundEndpoint() {
         given()
           .when().get("/services/delay/500/404")
           .then()
@@ -46,7 +46,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testTimeWasterWithCodeServerErrorEndpoint() {
+    public void testWasteTimeWithCodeServerErrorEndpoint() {
         given()
           .when().get("/services/delay/2000/500")
           .then()
@@ -55,7 +55,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testTimeWasterWithCodeOKLongWaitEndpoint() {
+    public void testWasteTimeWithCodeOKLongWaitEndpoint() {
         given()
           .when().get("/services/delay/3000/200")
           .then()
