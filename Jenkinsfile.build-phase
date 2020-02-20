@@ -115,7 +115,7 @@ pipeline {
             credentialsId: "${params.NEXUS_CREDENTIALS}",
             artifacts: [
               [
-               artifactId: "${ARTIFACT_ID}-runner",
+               artifactId: "${ARTIFACT_ID}",
                type: "${PACKAGING}",
                classifier: "",
                file: "target/${ARTIFACT_ID}-${VERSION}-runner.${PACKAGING}"
