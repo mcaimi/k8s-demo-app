@@ -2,8 +2,7 @@ pipeline {
   parameters { 
     string(name: 'REGISTRY_URL', defaultValue: 'registry.apps.kubernetes.local', description: 'The docker registry to push the image to')
     string(name: 'NEXUS_URL', defaultValue: 'nexus.apps.kubernetes.local', description: 'The docker registry to push the image to')
-    string(name: 'NEXUS_CREDS', defaultValue: 'jenkins-nexus', description: 'Credentials to use when connecting to Nexus (jenkins obkect name)') 
-    string(name: 'ARTIFACT_NAME', defaultValue: 'org.redhat:openshift-demo-application-quarkus-runner:1.0.0-SNAPSHOT', description: 'The artifact name on Nexus. Format is groupID:artifactName:artifactVersion')
+    string(name: 'NEXUS_CREDS', defaultValue: 'jenkins-nexus', description: 'Credentials to use when connecting to Nexus (jenkins obkect name)')
     string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the built application container')
     string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the built application container')
   }
@@ -21,6 +20,10 @@ pipeline {
     NEXUS_CREDENTIALS = credentials("${params.NEXUS_CREDS}")
     NEXUS_USER = "${env.NEXUS_CREDENTIALS_USR}"
     NEXUS_PASS = "${env.NEXUS_CREDENTIALS_PSW}"
+    GROUP_ID = readMavenPom().getGroupId()
+    ARTIFACT_ID = readMavenPom().getArtifactId()
+    VERSION = readMavenPom().getVersion()
+    PACKAGING = readMavenPom().getPackaging()
   }
 
   options {
@@ -33,7 +36,7 @@ pipeline {
       steps {
         container("docker-in-docker") {
           echo "BUILDING CONTAINER ${params.IMAGE_NAME} (${env.BUILD_ID})"
-          sh "docker build --build-arg nexus_auth=${env.NEXUS_CREDENTIALS} --build-arg nexus_repo_url=${params.NEXUS_URL} --build-arg artifact_name=${params.ARTIFACT_NAME} -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
+          sh "docker build --build-arg nexus_auth=${env.NEXUS_CREDENTIALS} --build-arg nexus_repo_url=${params.NEXUS_URL} --build-arg artifact_name=${env.GROUP_ID}:${env.ARTIFACT_ID}:${env.VERSION} -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
         }
       }
     }
