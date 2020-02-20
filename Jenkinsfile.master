@@ -15,7 +15,6 @@ pipeline {
     string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the application container to build')
     string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the application container to build')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
-    string(name: 'ARTIFACT_NAME', defaultValue: 'org.redhat:openshift-demo-application-quarkus-runner:1.0.0-SNAPSHOT', description: 'The artifact name on Nexus. Format is groupID:artifactName:artifactVersion')
   }
 
   agent {
@@ -29,7 +28,14 @@ pipeline {
     timeout(time: 1, unit: 'HOURS')
     timestamps()
   }
-    
+
+  environment {
+    GROUP_ID = readMavenPom().getGroupId()
+    ARTIFACT_ID = readMavenPom().getArtifactId()
+    VERSION = readMavenPom().getVersion()
+    PACKAGING = readMavenPom().getPackaging()
+  }
+
   stages {
     stage ('INVOKE: Build Custom Maven Agent') {
       steps {
@@ -62,7 +68,7 @@ pipeline {
             string(name: 'NEXUS_CREDS', value: "${params.NEXUS_CREDENTIALS}"),
             string(name: 'IMAGE_NAME', value: "${params.IMAGE_NAME}"),
             string(name: 'IMAGE_VERSION', value: "${params.IMAGE_VERSION}"),
-            string(name: 'ARTIFACT_NAME', value: "${params.ARTIFACT_NAME}")
+            string(name: 'ARTIFACT_NAME', value: "${env.GROUP_ID}:${env.ARTIFACT_ID}:${env.VERSION}")
           ]
       }     
     }
