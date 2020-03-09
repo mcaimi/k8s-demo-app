@@ -1,0 +1,45 @@
+pipeline {
+    agent {
+        kubernetes {
+            label "jenkins-slave-postgres-deploy"
+            defaultContainer "jnlp"
+            yaml k8sAgentPodYaml()
+        }
+    }
+
+    stages {
+        stage ("POSTGRES: Create PDB (DEV)") {
+          steps {
+           container("jnlp") {
+              sh "kubectl get cm postgres-init-config -n dev || kubectl create cm postgres-init-config --from-file=sql/postgres-init-db.sh -n dev"
+              sh "kubectl get deployment dev-postgres-001 || kubectl apply -k k8s/deployments/pgdev/"
+           }
+          }
+        }
+    }
+}
+
+def k8sAgentPodYaml() {
+  mavenYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: ci-jenkins
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: registry.apps.kubernetes.local/maven-agent:latest
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    """
+  return mavenYaml
+}

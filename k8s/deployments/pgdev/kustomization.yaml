@@ -1,0 +1,29 @@
+bases:
+  - ../pgcommon
+namespace: dev
+namePrefix: dev-
+nameSuffix: "-001"
+commonLabels:
+  app: k8s-demo-app
+commonAnnotations:
+  deployedBy: "jenkins"
+  chain: "devops-pipeline"
+  environment: "noprod"
+patchesStrategicMerge:
+- mem-sizing.yaml
+images:
+- name: postgres
+  newName: docker.io/library/postgres
+  newTag: latest
+secretGenerator:
+- name: postgres-init-secret
+  literals:
+  - postgres_password=P0stgr3s
+  - postgres_db_name=pgdev_db
+  - postgres_user_name=pgdev
+  - postgres_app_user=appuser-dev
+  - postgres_app_db=appuser-db
+configMapGenerator:
+- name: postgres-init-config
+  files:
+    - postgres-init-db.sh
