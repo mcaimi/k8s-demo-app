@@ -11,7 +11,6 @@ pipeline {
         stage ("POSTGRES: Create PDB (DEV)") {
           steps {
            container("jnlp") {
-              sh "kubectl get cm postgres-init-config -n dev || kubectl create cm postgres-init-config --from-file=sql/postgres-init-db.sh -n dev"
               sh "kubectl get deployment dev-postgres-001 || kubectl apply -k k8s/deployments/pgdev/"
            }
           }

@@ -26,7 +26,7 @@ metadata:
   namespace: dev
 rules:
 - apiGroups: ["*"]
-  resources: ["pods", "services", "deployments", "ingresses", "apps"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps", "configmaps"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -46,7 +46,7 @@ metadata:
   namespace: preprod
 rules:
 - apiGroups: ["*"]
-  resources: ["pods", "services", "deployments", "ingresses", "apps"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps", "configmaps"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -66,7 +66,7 @@ metadata:
   namespace: jenkins
 rules:
 - apiGroups: ["*"]
-  resources: ["pods", "services", "deployments", "ingresses", "apps", "secrets"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps", "secrets", "configmaps"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
