@@ -39,7 +39,7 @@ pipeline {
   stages {
     stage ('INVOKE: Build Custom Maven Agent') {
       steps {
-        build job: 'maven-agent-builder', parameters: [
+        build job: 'build-maven-agent-pipeline', parameters: [
             string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}"),
             string(name: 'BUILD_NAME', value: "${params.AGENT_NAME}"),
             string(name: 'BUILD_TAG', value: "${params.AGENT_TAG}")
@@ -49,7 +49,7 @@ pipeline {
 
     stage ('INVOKE: Build and Test Application Bundle') {
       steps {
-        build job: 'quarkus-demo-app', parameters: [
+        build job: 'build-application-artifact-pipeline', parameters: [
             string(name: 'NEXUS_URL', value: "${params.NEXUS_URL}"),
             string(name: 'MAVEN_REPO_NAME', value: "${params.MAVEN_REPO_NAME}"),
             string(name: 'NEXUS_CREDENTIALS', value: "${params.NEXUS_CREDENTIALS}"),
@@ -62,7 +62,7 @@ pipeline {
 
     stage('INVOKE: Assemble Container Image Artifact') {
       steps {
-        build job: 'java-runner', parameters: [
+        build job: 'java-runner-build-pipeline', parameters: [
             string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}"),
             string(name: 'NEXUS_URL', value: "${params.NEXUS_URL}"),
             string(name: 'NEXUS_CREDS', value: "${params.NEXUS_CREDENTIALS}"),
@@ -75,7 +75,7 @@ pipeline {
 
     stage('INVOKE: Deploy, Test and Promote') {
       steps {
-        build job: 'test-and-promote-demo', parameters: [
+        build job: 'application-deployment-pipeline', parameters: [
             string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}"),
             string(name: 'IMAGE_NAME', value: "${params.IMAGE_NAME}"),
             string(name: 'IMAGE_VERSION', value: "${params.IMAGE_VERSION}"),

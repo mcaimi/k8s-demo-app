@@ -1,7 +1,7 @@
 bases:
   - ../pgcommon
-namespace: dev
-namePrefix: dev-
+namespace: preprod
+namePrefix: preprod-
 nameSuffix: "-001"
 commonLabels:
   app: k8s-demo-app
@@ -19,11 +19,5 @@ secretGenerator:
 - name: postgres-init-secret
   literals:
   - postgres_password=P0stgr3s
-  - postgres_db_name=pgdev_db
-  - postgres_user_name=pgdev
-  - postgres_app_user=appuser_dev
-  - postgres_app_db=appuser_db
-configMapGenerator:
-- name: postgres-init-config
-  files:
-    - postgres-init-db.sh
+  - postgres_db_name=pgdev_preprod
+  - postgres_user_name=pgpreprod
