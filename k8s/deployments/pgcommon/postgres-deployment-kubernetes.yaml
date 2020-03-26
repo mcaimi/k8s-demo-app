@@ -55,6 +55,11 @@ spec:
               secretKeyRef:
                 name: postgres-init-secret
                 key: postgres_app_user
+          - name: POSTGRES_APP_USER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: postgres_app_user_password
           - name: PGDATA
             value: "/var/lib/postgresql/data"
         volumeMounts:

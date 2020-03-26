@@ -21,3 +21,10 @@ secretGenerator:
   - postgres_password=P0stgr3s
   - postgres_db_name=pgdev_preprod
   - postgres_user_name=pgpreprod
+  - postgres_app_user=appuser_dev
+  - postgres_app_db=appuser_db
+  - postgres_app_user_password=pppassword
+configMapGenerator:
+- name: postgres-init-config
+  files:
+    - postgres-init-db.sh

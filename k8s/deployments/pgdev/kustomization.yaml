@@ -23,6 +23,7 @@ secretGenerator:
   - postgres_user_name=pgdev
   - postgres_app_user=appuser_dev
   - postgres_app_db=appuser_db
+  - postgres_app_user_password=devpassword
 configMapGenerator:
 - name: postgres-init-config
   files:

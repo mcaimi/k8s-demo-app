@@ -18,11 +18,12 @@ images:
 secretGenerator:
 - name: postgres-init-secret
   literals:
-  - postgres_password=P0stgr3s
-  - postgres_db_name=pgdev_db
-  - postgres_user_name=pgdev
-  - postgres_app_user=appuser_dev
-  - postgres_app_db=appuser_db
+  - postgres_password=buildroot
+  - postgres_db_name=root_db
+  - postgres_user_name=buildroot
+  - postgres_app_user=hibernate
+  - postgres_app_db=hibernate_db
+  - postgres_app_user_password=hibernate
 configMapGenerator:
 - name: postgres-init-config
   files:
