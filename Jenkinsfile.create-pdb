@@ -2,7 +2,6 @@ pipeline {
   parameters {
     string(name: 'DBENV', defaultValue: 'dev', description: 'The Database Environment to deploy to.')
     string(name: 'ACTION', defaultValue: 'deploy', description: 'The reuqested action on the Database Deployment. "deploy" or "undeploy" are permitted values')
-    string(name: 'WEBHOOK_CALLBACK', defaultValue: 'http://jenkins.apps.kubernetes.local/db_callback', description: 'Callback Address to report to the master pipeline upon completion.')
   }
 
   agent {
@@ -30,7 +29,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
-          sh "kubectl get deployment dev-postgres-001 || kubectl apply -k k8s/deployments/pg${params.DBENV}/"
+          sh "kubectl apply -k k8s/deployments/pg${params.DBENV}/"
         }
       }
     }
