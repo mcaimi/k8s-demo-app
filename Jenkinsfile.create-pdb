@@ -1,21 +1,52 @@
 pipeline {
-    agent {
-        kubernetes {
-            label "jenkins-slave-postgres-deploy"
-            defaultContainer "jnlp"
-            yaml k8sAgentPodYaml()
+  parameters {
+    string(name: 'DBENV', defaultValue: 'dev', description: 'The Database Environment to deploy to.')
+    string(name: 'ACTION', defaultValue: 'deploy', description: 'The reuqested action on the Database Deployment. "deploy" or "undeploy" are permitted values')
+    string(name: 'WEBHOOK_CALLBACK', defaultValue: 'http://jenkins.apps.kubernetes.local/db_callback', description: 'Callback Address to report to the master pipeline upon completion.')
+  }
+
+  agent {
+    kubernetes {
+        label "jenkins-slave-postgres-deploy"
+        defaultContainer "jnlp"
+        yaml k8sAgentPodYaml()
+    }
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  environment {
+    DEPLOY_BRANCH = "${param.ACTION}"
+  }
+
+  stages {
+    stage ("POSTGRES: Deploy a new PDB") {
+      when {
+        environment ignoreCase: true, name: 'DEPLOY_BRANCH', value: 'deploy'
+      }
+      steps {
+        container("jnlp") {
+          echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
+          sh "kubectl get deployment dev-postgres-001 || kubectl apply -k k8s/deployments/pg${params.DBENV}/"
         }
+      }
     }
 
-    stages {
-        stage ("POSTGRES: Create PDB (DEV)") {
-          steps {
-           container("jnlp") {
-              sh "kubectl get deployment dev-postgres-001 || kubectl apply -k k8s/deployments/pgdev/"
-           }
-          }
+    stage ("POSTGRES: Undeploy a PDB") {
+      when {
+        environment ignoreCase: true, name: 'DEPLOY_BRANCH', value: 'undeploy'
+      }
+      steps {
+        container("jnlp") {
+          echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
+          sh "kubectl delete -k k8s/deployments/pg${params.DBENV}/"
         }
+      }
     }
+  }
 }
 
 def k8sAgentPodYaml() {
