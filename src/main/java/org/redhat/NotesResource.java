@@ -17,8 +17,6 @@ import org.jboss.resteasy.annotations.jaxrs.PathParam;
 public class NotesResource {
     @Inject
     NotesService noteService;
-    @Inject
-    MigrationService migrator;
 
     @GET
     @Path("/all")
