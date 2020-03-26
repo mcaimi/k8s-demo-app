@@ -13,8 +13,9 @@ import javax.persistence.Table;
 @Table(name = "notes")
 @NamedQuery(name = "Notes.AllNotes", query = "SELECT n FROM Note n ORDER BY n.id")
 public class Note {
-    @Id 
-    @SequenceGenerator(name = "noteSeq", sequenceName = "notes_id_squential", allocationSize = 1, initialValue = 1)
+    @Id
+    @Column(unique = true)
+    @SequenceGenerator(name = "noteSeq", sequenceName = "notes_id_sequential", allocationSize = 1, initialValue = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="noteSeq")
     private Long id;
 
