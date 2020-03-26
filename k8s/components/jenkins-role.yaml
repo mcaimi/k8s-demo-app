@@ -6,7 +6,7 @@ metadata:
   namespace: jenkins
 rules:
 - apiGroups: ["*"]
-  resources: ["pods", "services", "deployments", "ingresses", "apps"]
+  resources: ["pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -16,7 +16,7 @@ rules:
   verbs: ["get","list","watch"]
 - apiGroups: [""]
   resources: ["secrets"]
-  verbs: ["get"]
+  verbs: ["get", "create", "delete"]
 
 ---
 kind: Role
