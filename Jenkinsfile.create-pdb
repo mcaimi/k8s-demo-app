@@ -32,6 +32,14 @@ pipeline {
           sh "kubectl apply -k k8s/deployments/pg${params.DBENV}/"
         }
       }
+      post {
+        failure {
+          container("jnlp") {
+            echo "DEPLOYMENT FAILED, UNDEPLOY... (${env.BUILD_ID})"
+            sh "kubectl delete -k k8s/deployments/pg${params.DBENV}/"
+          }
+        }
+      }
     }
 
     stage ("POSTGRES: Undeploy a PDB") {
