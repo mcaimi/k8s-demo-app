@@ -18,13 +18,13 @@ pipeline {
   }
 
   environment {
-    DEPLOY_BRANCH = "${param.ACTION}"
+    DEPLOY_ACTION = "${params.ACTION}"
   }
 
   stages {
     stage ("POSTGRES: Deploy a new PDB") {
       when {
-        environment ignoreCase: true, name: 'DEPLOY_BRANCH', value: 'deploy'
+        environment ignoreCase: true, name: 'DEPLOY_ACTION', value: 'deploy'
       }
       steps {
         container("jnlp") {
@@ -36,7 +36,7 @@ pipeline {
 
     stage ("POSTGRES: Undeploy a PDB") {
       when {
-        environment ignoreCase: true, name: 'DEPLOY_BRANCH', value: 'undeploy'
+        environment ignoreCase: true, name: 'DEPLOY_ACTION', value: 'undeploy'
       }
       steps {
         container("jnlp") {
