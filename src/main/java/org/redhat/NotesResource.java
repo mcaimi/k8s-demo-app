@@ -34,7 +34,6 @@ public class NotesResource {
             LOGGER.info("Getting all Notes from the database.");
             results = noteService.getAll();
         } catch(MalformedNoteException e) {
-            results = null;
             return Response.status(500).build();
         }
         
