@@ -48,7 +48,7 @@ pipeline {
       }
       steps {
         container("jnlp") {
-          echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
+          echo "[${params.DBENV}] REMOVING DATABASE INSTANCE"
           sh "kubectl delete -k k8s/deployments/pg${params.DBENV}/"
         }
       }
