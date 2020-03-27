@@ -8,42 +8,47 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import org.redhat.exceptions.NoteExistsException;
+import org.redhat.exceptions.MalformedNoteException;
+
 @ApplicationScoped
 public class NotesService {
     @Inject
     EntityManager em;
 
     @Transactional
-    public void publishNote(Note newNote) throws Exception {
+    public void publishNote(Note newNote) throws NoteExistsException, MalformedNoteException {
         try {
             createNoteWithData(newNote.getName(), newNote.getContents());
-        } catch (Exception e) {
-            throw e;
+        } catch (NoteExistsException e) {
+            throw new NoteExistsException("Called method createNoteWithData() throwed exception:" + e.getMessage());
+        } catch (MalformedNoteException e) {
+            throw new MalformedNoteException("Called method createNoteWithData() throwed exception:" + e.getMessage());
         }
     }
 
     @Transactional 
-    public void createNoteWithData(String noteName, String noteContents) throws Exception {
+    public void createNoteWithData(String noteName, String noteContents) throws NoteExistsException, MalformedNoteException {
         try {
             Note newNote = new Note();
             newNote.setName(noteName);
             newNote.setContents(noteContents);
             em.persist(newNote);
         } catch (EntityExistsException e) {
-            return;
+            throw new NoteExistsException("Note exists on the database." + e.getMessage());
         } catch(IllegalArgumentException e) {
-            throw new Exception("NoteService.createNote(): Illegal argument received." + e.getMessage());
+            throw new MalformedNoteException("NoteService.createNote(): Illegal argument received." + e.getMessage());
         }
     }
 
     @Transactional
-    public void deleteNote(Note item) throws Exception {
+    public void deleteNote(Note item) throws NoteExistsException, MalformedNoteException {
         try {
             em.remove(item);
         } catch (EntityExistsException e) {
-            return;
+            throw new NoteExistsException("Note exists on the database." + e.getMessage());
         } catch(IllegalArgumentException e) {
-            throw new Exception("NoteService.createNote(): Illegal argument received." + e.getMessage());
+            throw new MalformedNoteException("NoteService.deleteNote(): Illegal argument received." + e.getMessage());
         }
     }
 
@@ -60,23 +65,25 @@ public class NotesService {
     }
 
     @Transactional
-    public void deleteNoteById(Long id) {
+    public void deleteNoteById(Long id) throws NoteExistsException, MalformedNoteException {
         Note fetched = getNoteById(id);
         if (fetched != null) {
             try {
                 deleteNote(fetched);
-            } catch (Exception e) {
-                return;
+            } catch (NoteExistsException e) {
+                throw new NoteExistsException("Called method deleteNote() throwed exception:" + e.getMessage());
+            } catch (MalformedNoteException e) {
+                throw new MalformedNoteException("Called method deleteNote() throwed exception:" + e.getMessage());
             }
         }
         return;
     }
 
-    public List<Note> getAll() throws Exception {
+    public List<Note> getAll() throws MalformedNoteException {
         try {
             return em.createNamedQuery("Notes.AllNotes", Note.class).getResultList();
         } catch (IllegalArgumentException e) {
-            throw new Exception("NoteService.getAll(): Illegal argument received." + e.getMessage());
+            throw new MalformedNoteException("NoteService.getAll(): Illegal argument received." + e.getMessage());
         }
     }
 
