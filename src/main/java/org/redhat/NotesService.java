@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.redhat.exceptions.NoteExistsException;
+import org.redhat.exceptions.NoteNotExistsException;
 import org.redhat.exceptions.MalformedNoteException;
 
 @ApplicationScoped
@@ -17,9 +18,9 @@ public class NotesService {
     EntityManager em;
 
     @Transactional
-    public void publishNote(Note newNote) throws NoteExistsException, MalformedNoteException {
+    public Note publishNote(Note newNote) throws NoteExistsException, MalformedNoteException {
         try {
-            createNoteWithData(newNote.getName(), newNote.getContents());
+            return createNoteWithData(newNote.getName(), newNote.getContents());
         } catch (NoteExistsException e) {
             throw new NoteExistsException("Called method createNoteWithData() throwed exception:" + e.getMessage());
         } catch (MalformedNoteException e) {
@@ -28,12 +29,13 @@ public class NotesService {
     }
 
     @Transactional 
-    public void createNoteWithData(String noteName, String noteContents) throws NoteExistsException, MalformedNoteException {
+    public Note createNoteWithData(String noteName, String noteContents) throws NoteExistsException, MalformedNoteException {
         try {
             Note newNote = new Note();
             newNote.setName(noteName);
             newNote.setContents(noteContents);
             em.persist(newNote);
+            return newNote;
         } catch (EntityExistsException e) {
             throw new NoteExistsException("Note exists on the database." + e.getMessage());
         } catch(IllegalArgumentException e) {
@@ -63,7 +65,7 @@ public class NotesService {
     }
 
     @Transactional
-    public void deleteNoteById(Long id) throws MalformedNoteException {
+    public void deleteNoteById(Long id) throws NoteNotExistsException, MalformedNoteException {
         Note fetched = getNoteById(id);
         if (fetched != null) {
             try {
@@ -71,6 +73,8 @@ public class NotesService {
             } catch (MalformedNoteException e) {
                 throw new MalformedNoteException("Called method deleteNote() throwed exception:" + e.getMessage());
             }
+        } else {
+            throw new NoteNotExistsException("Trying to delete a non-existing note ID. Refusing to do so. ID:" + id);
         }
     }
 

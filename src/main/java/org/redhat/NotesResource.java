@@ -16,6 +16,7 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 import org.redhat.exceptions.MalformedNoteException;
 import org.redhat.exceptions.NoteExistsException;
+import org.redhat.exceptions.NoteNotExistsException;
 
 @Path("/notes")
 public class NotesResource {
@@ -45,6 +46,10 @@ public class NotesResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam Long itemId) {
         LOGGER.info("Getting note with id [" + itemId + "] from the database.");
+        Note foundNote = noteService.getNoteById(itemId);
+        if (foundNote == null) {
+            return Response.status(404).build();
+        }
         return Response.ok(noteService.getNoteById(itemId)).status(200).build();
     }
 
@@ -56,10 +61,12 @@ public class NotesResource {
             LOGGER.error("Got a non null ID, this note is malformed.");
             return Response.status(500).build();
         }
+        
+        Note inserted;
 
         try {
             LOGGER.info("Publishing new note: " + newNote.getName());
-            noteService.publishNote(newNote);
+            inserted = noteService.publishNote(newNote);
         } catch (NoteExistsException e) {
             LOGGER.error("Publish failed for note: " + newNote.getName() + "NOTE EXISTS.");
             return Response.status(500).build();
@@ -68,7 +75,7 @@ public class NotesResource {
             return Response.status(500).build();
         }
  
-        return Response.status(200).build();
+        return Response.ok(inserted.getId()).status(200).build();
     }
 
     @PUT
@@ -95,6 +102,9 @@ public class NotesResource {
         } catch(MalformedNoteException e) {
             LOGGER.error("Delete failed for note: " + itemId);
             return Response.status(500).build();
+        } catch (NoteNotExistsException e) {
+            LOGGER.warn("Delete non-existing note failed for note: " + itemId);
+            return Response.status(404).build();
         }
 
         return Response.ok(itemId).status(200).build();
