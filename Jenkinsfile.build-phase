@@ -47,6 +47,15 @@ pipeline {
       }
     }
 
+    stage ('INVOKE: Deploy a Postgres Database for Unit Testing.') {
+      steps {
+        build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "build"),
+            string(name: 'ACTION', value: "deploy")
+          ]
+      }
+    }
+
     stage ("MVN: UNIT TESTS") {
       steps {
         container('jnlp') {
@@ -55,6 +64,23 @@ pipeline {
           echo "Archiving test results in JUnit format... (${env.BUILD_ID})"
           junit '**/target/surefire-reports/TEST-*.xml'
         }
+      }
+      post {
+        failure {
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "build"),
+            string(name: 'ACTION', value: "undeploy")
+          ]
+        }
+      }
+    }
+
+    stage ('INVOKE: Undeploy the test database instance.') {
+      steps {
+        build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "build"),
+            string(name: 'ACTION', value: "undeploy")
+          ]
       }
     }
 
