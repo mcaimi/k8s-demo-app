@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import org.redhat.exceptions.MalformedNoteException;
+import org.redhat.exceptions.NoteExistsException;
 
 @Path("/notes")
 public class NotesResource {
@@ -25,25 +27,26 @@ public class NotesResource {
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Note> getAllNotes() {
+    public Response getAllNotes() {
         List<Note> results;
         
         try {
             LOGGER.info("Getting all Notes from the database.");
             results = noteService.getAll();
-        } catch(Exception e) {
+        } catch(MalformedNoteException e) {
             results = null;
+            return Response.status(500).build();
         }
         
-        return results;
+        return Response.ok(results).status(200).build();
     }
 
     @GET
     @Path("/{itemId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Note getById(@PathParam Long itemId) {
+    public Response getById(@PathParam Long itemId) {
         LOGGER.info("Getting note with id [" + itemId + "] from the database.");
-        return noteService.getNoteById(itemId);
+        return Response.ok(noteService.getNoteById(itemId)).status(200).build();
     }
 
     @POST
@@ -58,7 +61,10 @@ public class NotesResource {
         try {
             LOGGER.info("Publishing new note: " + newNote.getName());
             noteService.publishNote(newNote);
-        } catch (Exception e) {
+        } catch (NoteExistsException e) {
+            LOGGER.error("Publish failed for note: " + newNote.getName() + "NOTE EXISTS.");
+            return Response.status(500).build();
+        } catch (MalformedNoteException e) {
             LOGGER.error("Publish failed for note: " + newNote.getName());
             return Response.status(500).build();
         }
@@ -87,11 +93,11 @@ public class NotesResource {
         try {
             LOGGER.info("Deleting note: " + itemId);
             noteService.deleteNoteById(itemId);
-        } catch(Exception e) {
+        } catch(MalformedNoteException e) {
             LOGGER.error("Delete failed for note: " + itemId);
             return Response.status(500).build();
         }
 
-        return Response.status(200).build();
+        return Response.ok(itemId).status(200).build();
     }
 }

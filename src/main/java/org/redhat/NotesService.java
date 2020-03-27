@@ -42,11 +42,9 @@ public class NotesService {
     }
 
     @Transactional
-    public void deleteNote(Note item) throws NoteExistsException, MalformedNoteException {
+    public void deleteNote(Note item) throws MalformedNoteException {
         try {
             em.remove(item);
-        } catch (EntityExistsException e) {
-            throw new NoteExistsException("Note exists on the database." + e.getMessage());
         } catch(IllegalArgumentException e) {
             throw new MalformedNoteException("NoteService.deleteNote(): Illegal argument received." + e.getMessage());
         }
@@ -65,18 +63,15 @@ public class NotesService {
     }
 
     @Transactional
-    public void deleteNoteById(Long id) throws NoteExistsException, MalformedNoteException {
+    public void deleteNoteById(Long id) throws MalformedNoteException {
         Note fetched = getNoteById(id);
         if (fetched != null) {
             try {
                 deleteNote(fetched);
-            } catch (NoteExistsException e) {
-                throw new NoteExistsException("Called method deleteNote() throwed exception:" + e.getMessage());
             } catch (MalformedNoteException e) {
                 throw new MalformedNoteException("Called method deleteNote() throwed exception:" + e.getMessage());
             }
         }
-        return;
     }
 
     public List<Note> getAll() throws MalformedNoteException {
