@@ -2,7 +2,7 @@ bases:
   - ../pgcommon
 namespace: jenkins
 namePrefix: jenkins-
-nameSuffix: "BUILD_ID"
+nameSuffix: "-BUILD_ID"
 commonLabels:
   app: k8s-demo-app
 commonAnnotations:
