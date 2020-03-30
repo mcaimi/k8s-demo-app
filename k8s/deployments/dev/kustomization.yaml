@@ -1,8 +1,8 @@
 bases:
   - ../common
-namespace: dev
-namePrefix: dev-
-nameSuffix: "-001"
+namespace: NS_ID
+namePrefix: NS_ID-
+nameSuffix: "-BUILD_ID"
 commonLabels:
   app: k8s-demo-app
 commonAnnotations:
@@ -12,6 +12,28 @@ commonAnnotations:
 patchesStrategicMerge:
 - mem-sizing.yaml
 - ingress-route.yaml
+secretGenerator:
+- name: postgres-init-secret
+  literals:
+  - postgres_app_user=dev_user
+  - postgres_app_db=dev_db
+  - postgres_app_user_password=hibernate
+  - db_driver=postgresql
+  - db_hostname=dev-postgresql-service-BUILD_ID
+  - db_port=5432
+  - orm_log=true
+  - default_schema=dev_schema
+  - db_generation=none
+  - hibernate_load_file=no-file
+  - jdbc_max_size=8
+  - jdbc_min_size=2
+  - flyway_migrate_at_start=true
+  - flyway_baseline_version=1.0.0
+  - flyway_baseline_description=Dev_Initial
+  - flyway_connection_retries=300
+  - flyway_migration_table=dev_history
+  - flyway_migrations_location=db/migrations/dev
+  - flyway_baseline_on_migrate=true
 images:
 - name: java-runner
   newName: registry.apps.kubernetes.local/java-runner
