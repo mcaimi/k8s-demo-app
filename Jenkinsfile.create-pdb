@@ -1,6 +1,6 @@
 pipeline {
   parameters {
-    string(name: 'DBENV', defaultValue: 'dev', description: 'The Database Environment to deploy to.')
+    string(name: 'DBENV', defaultValue: 'jenkins', description: 'The Database Environment to deploy the db into.')
     string(name: 'ACTION', defaultValue: 'deploy', description: 'The reuqested action on the Database Deployment. "deploy" or "undeploy" are permitted values')
     string(name: 'PARENT_BUILD_ID', defaultValue: '-001', description: 'Build ID of the caller pipeline')
   }
@@ -30,7 +30,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
-          sh "sed -i 's/BUILD_ID/${params.PARENT_BUILD_ID}/' k8s/deployments/pg${params.DBENV}/kustomization.yaml && kubectl apply -k k8s/deployments/pg${params.DBENV}/"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' k8s/deployments/pg${params.DBENV}/kustomization.yaml && kubectl apply -k k8s/deployments/pg${params.DBENV}/"
         }
       }
       post {
@@ -50,7 +50,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "[${params.DBENV}] REMOVING DATABASE INSTANCE"
-          sh "sed -i 's/BUILD_ID/${params.PARENT_BUILD_ID}/' k8s/deployments/pg${params.DBENV}/kustomization.yaml && kubectl delete -k k8s/deployments/pg${params.DBENV}/"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' k8s/deployments/pg${params.DBENV}/kustomization.yaml && kubectl delete -k k8s/deployments/pg${params.DBENV}/"
         }
       }
     }

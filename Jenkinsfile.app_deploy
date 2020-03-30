@@ -44,7 +44,15 @@ pipeline {
       steps {
         container("jnlp") {
           echo "DEPLOYING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
-          sh "kubectl apply -k k8s/deployments/dev/"
+          
+          echo " -> Deploying the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "dev"),
+            string(name: 'ACTION', value: "deploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/dev/ && kubectl apply -k k8s/deployments/dev/"
         }
         container("jnlp") {
           echo "TESTING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
@@ -55,7 +63,15 @@ pipeline {
         failure {
           container("jnlp") {
             echo "DEV DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
-            sh "kubectl delete -k k8s/deployments/dev/"
+
+            echo " -> Removing the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+            build job: 'postgres-database-pipeline', parameters: [
+              string(name: 'DBENV', value: "dev"),
+              string(name: 'ACTION', value: "undeploy"),
+              string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+            ]
+
+            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/dev/ && kubectl delete -k k8s/deployments/dev/"
           }
           container("docker-in-docker") {
             echo "UNTAGGING IMAGE FROM DEV ENVIRONMENT"
@@ -79,7 +95,15 @@ pipeline {
       steps {
         container("jnlp") {
           echo "DEPLOYING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
-          sh "kubectl apply -k k8s/deployments/preprod/"
+
+          echo " -> Deploying the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "preprod"),
+            string(name: 'ACTION', value: "deploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/preprod/ && kubectl apply -k k8s/deployments/preprod/"
         }
         container("jnlp") {
           echo "TESTING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
@@ -90,7 +114,15 @@ pipeline {
         failure {
           container("jnlp") {
             echo "PREPROD DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
-            sh "kubectl delete -k k8s/deployments/preprod/"
+
+            echo " -> Removing the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+            build job: 'postgres-database-pipeline', parameters: [
+              string(name: 'DBENV', value: "preprod"),
+              string(name: 'ACTION', value: "undeploy"),
+              string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+            ]
+
+            sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/preprod/ && kubectl delete -k k8s/deployments/preprod/"
           }
           container("docker-in-docker") {
             echo "UNTAGGING IMAGE FROM PREPROD ENVIRONMENT"
@@ -115,8 +147,22 @@ pipeline {
   post {
     success {
       echo "CLEANING UP... (${env.BUILD_ID})"
-      sh "kubectl delete -k k8s/deployments/dev/"
-      sh "kubectl delete -k k8s/deployments/preprod/"
+      echo " -> Cleaning up the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+      build job: 'postgres-database-pipeline', parameters: [
+        string(name: 'DBENV', value: "dev"),
+        string(name: 'ACTION', value: "undeploy"),
+        string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+      ]
+      echo " -> Cleaning up the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+      build job: 'postgres-database-pipeline', parameters: [
+        string(name: 'DBENV', value: "preprod"),
+        string(name: 'ACTION', value: "undeploy"),
+        string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+      ]
+      echo " -> Cleaning up application deployment in DEV ENVIRONMENT (${env.BUILD_ID})"
+      sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/dev/ && kubectl delete -k k8s/deployments/dev/"
+      echo " -> Cleaning up application deployment in PREPROD ENVIRONMENT (${env.BUILD_ID})"
+      sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/preprod/ && kubectl delete -k k8s/deployments/preprod/"
     }
   }
 }
