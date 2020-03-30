@@ -1,6 +1,11 @@
 package org.redhat.exceptions;
 
 public class MalformedNoteException extends Exception {
+    /**
+     * generated serial version UUID
+     */
+    private static final long serialVersionUID = -4963871740639334006L;
+
     public MalformedNoteException() {
     }
 

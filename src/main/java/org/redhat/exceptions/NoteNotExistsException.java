@@ -1,6 +1,11 @@
 package org.redhat.exceptions;
 
 public class NoteNotExistsException extends Exception {
+    /**
+     * generated serial version UUID
+     */
+    private static final long serialVersionUID = -2968812072817733049L;
+
     public NoteNotExistsException() {
     }
 
