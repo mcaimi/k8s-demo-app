@@ -15,6 +15,8 @@ pipeline {
     string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the application container to build')
     string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the application container to build')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
+
+    string(name: 'BUILD_NS', defaultValue: 'jenkins', description: 'The namespace in which builds are performed')
   }
 
   agent {
@@ -55,7 +57,8 @@ pipeline {
             string(name: 'NEXUS_CREDENTIALS', value: "${params.NEXUS_CREDENTIALS}"),
             string(name: 'NEXUS_PROTO', value: "${params.NEXUS_PROTO}"),
             string(name: 'SONAR_CREDS', value: "${params.SONAR_CREDS}"),
-            string(name: 'SONAR_INSTALLATION', value: "${params.SONAR_INSTALLATION}")
+            string(name: 'SONAR_INSTALLATION', value: "${params.SONAR_INSTALLATION}"),
+            string(name: 'BUILD_NAMESPACE', value: "${params.BUILD_NS}")
           ]
       }
     }
