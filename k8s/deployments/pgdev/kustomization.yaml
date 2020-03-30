@@ -2,7 +2,7 @@ bases:
   - ../pgcommon
 namespace: dev
 namePrefix: dev-
-nameSuffix: "-001"
+nameSuffix: "BUILD_ID"
 commonLabels:
   app: k8s-demo-app
 commonAnnotations:
