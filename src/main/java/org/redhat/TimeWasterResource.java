@@ -16,9 +16,9 @@ public class TimeWasterResource {
     @GET
     @Path("/delay/{milliseconds}")
     @Produces(MediaType.TEXT_PLAIN)
-    public String wasteTime(@PathParam long milliseconds) throws InterruptedException {
+    public Response wasteTime(@PathParam long milliseconds) throws InterruptedException {
         try {
-            return timeWaster.wasteTime(milliseconds);
+            return Response.status(200).entity(timeWaster.wasteTime(milliseconds)).build();
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
