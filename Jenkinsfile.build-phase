@@ -24,7 +24,7 @@ pipeline {
     PACKAGING = readMavenPom().getPackaging()
     BUILD_NS = "${params.BUILD_NAMESPACE}"
     DBKIND = "postgresql"
-    DBHOST = "${env.BUILD_NS}-postgres-service-${env.BUILD_ID}.${env.BUILD_NAMESPACE}"
+    DBHOST = "${env.BUILD_NS}-postgres-service-${env.BUILD_ID}"
     DBPORT = "5432"
     DBNAME = "hibernate_db"
   }
