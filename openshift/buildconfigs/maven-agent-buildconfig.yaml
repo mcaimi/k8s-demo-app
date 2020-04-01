@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  name: jenkins-slave
+spec:
+  imagePullPolicy: IfNotPresent
+  tags:
+  - annotations:
+      openshift.io/display-name: jenkins-slave
+      openshift.io/imported-from: docker.io/jenkins/slave:latest
+    from:
+      kind: DockerImage
+      name: 'docker.io/jenkins/slave:latest'
+    importPolicy: {}
+    name: latest
+    referencePolicy:
+      type: ""
+
+---
+apiVersion: v1
+kind: ImageStream
+metadata:
+  name: jenkins-maven-agent
+spec:
+  tags:
+  - name: latest
+---
+
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: "jenkins-maven-agent"
+spec:
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "jenkins-maven-agent:latest"
+  source:
+    git:
+      uri: https://github.com/mcaimi/k8s-demo-app.git
+      ref: "master"
+    sourceSecret:
+      name: "buildbot-auth"
+    contextDir: "containers/maven-agent"
+  images:
+  - from:
+      kind: "ImageStreamTag"
+      name: "jenkins-maven-agent:latest"
+  runPolicy: "Serial"
+  strategy:
+    dockerStrategy:
+      noCache: true
+      from:
+        kind: "ImageStreamTag"
+        name: "jenkins-slave:latest"
+  triggers:
+    - type: "ImageChange"
+    - type: "ConfigChange"
+
