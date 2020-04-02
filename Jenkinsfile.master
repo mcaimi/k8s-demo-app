@@ -58,6 +58,7 @@ pipeline {
             string(name: 'NEXUS_PROTO', value: "${params.NEXUS_PROTO}"),
             string(name: 'SONAR_CREDS', value: "${params.SONAR_CREDS}"),
             string(name: 'SONAR_INSTALLATION', value: "${params.SONAR_INSTALLATION}"),
+            string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}"),
             string(name: 'BUILD_NAMESPACE', value: "${params.BUILD_NS}")
           ]
       }

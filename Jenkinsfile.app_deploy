@@ -10,7 +10,7 @@ pipeline {
     kubernetes {
       label "jenkins-slave-dind"
       defaultContainer "jnlp"
-      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}")
+      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}", "${params.REGISTRY_URL}")
     }
   }
 
@@ -169,7 +169,7 @@ pipeline {
   }
 }
 
-def k8sAgentPodYaml(serviceAccount) {
+def k8sAgentPodYaml(serviceAccount, registryUrl) {
   dockerInDockerYaml = """
 apiVersion: v1
 kind: Pod
@@ -183,7 +183,7 @@ spec:
   automountServiceAccountToken: true
   containers:
     - name: jnlp
-      image: registry.apps.kubernetes.local/maven-agent:latest
+      image: URL_PLACEHOLDER/maven-agent:latest
       imagePullPolicy: Always
       env:
       - name: POD_IP
@@ -218,5 +218,5 @@ spec:
       emptyDir: {}
     """
 
-    return dockerInDockerYaml.replaceAll(~/SA_NAME/, serviceAccount)
+    return dockerInDockerYaml.replaceAll(~/SA_NAME/, serviceAccount).replaceAll(~/URL_PLACEHOLDER/, registryUrl)
 }
