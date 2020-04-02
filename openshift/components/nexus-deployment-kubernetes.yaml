@@ -4,15 +4,12 @@ kind: PersistentVolumeClaim
 metadata:
   name: nexus-claim
 spec:
-  selector:
-    matchLabels:
-      failure-domain.beta.kubernetes.io/zone: "EU-FRANKFURT-1-AD-3"
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "oci"
+  storageClassName: "standard"
 ---
 apiVersion: apps/v1
 kind: Deployment

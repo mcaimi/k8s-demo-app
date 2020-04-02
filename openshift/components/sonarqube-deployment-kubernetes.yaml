@@ -4,60 +4,48 @@ kind: PersistentVolumeClaim
 metadata:
   name: sonar-conf-claim
 spec:
-  selector:
-    matchLabels:
-      failure-domain.beta.kubernetes.io/zone: "EU-FRANKFURT-1-AD-3"
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "oci"
+  storageClassName: "standard"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: sonar-data-claim
 spec:
-  selector:
-    matchLabels:
-      failure-domain.beta.kubernetes.io/zone: "EU-FRANKFURT-1-AD-3"
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "oci"
+  storageClassName: "standard"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: sonar-logs-claim
 spec:
-  selector:
-    matchLabels:
-      failure-domain.beta.kubernetes.io/zone: "EU-FRANKFURT-1-AD-3"
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "oci"
+  storageClassName: "standard"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: sonar-extensions-claim
 spec:
-  selector:
-    matchLabels:
-      failure-domain.beta.kubernetes.io/zone: "EU-FRANKFURT-1-AD-3"
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "oci"
+  storageClassName: "standard"
 ---
 apiVersion: apps/v1
 kind: Deployment
