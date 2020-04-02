@@ -20,7 +20,7 @@ spec:
 apiVersion: v1
 kind: ImageStream
 metadata:
-  name: jenkins-maven-agent
+  name: maven-agent
 spec:
   tags:
   - name: latest
@@ -34,7 +34,7 @@ spec:
   output:
     to:
       kind: "ImageStreamTag"
-      name: "jenkins-maven-agent:latest"
+      name: "maven-agent:latest"
   source:
     git:
       uri: https://github.com/mcaimi/k8s-demo-app.git
@@ -45,7 +45,7 @@ spec:
   images:
   - from:
       kind: "ImageStreamTag"
-      name: "jenkins-maven-agent:latest"
+      name: "maven-agent:latest"
   runPolicy: "Serial"
   strategy:
     dockerStrategy:
