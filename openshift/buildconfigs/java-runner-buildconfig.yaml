@@ -54,6 +54,8 @@ spec:
           value: "nexus.apps.kubernetes.local"
         - name: "artifact_name"
           value: "org.redhat:openshift-demo-application-quarkus-runner:1.0.0-SNAPSHOT"
+        - name: "nexus_auth"
+          value: "jenkins:jenkins"
       noCache: true
       from:
         kind: "ImageStreamTag"
