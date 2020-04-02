@@ -225,5 +225,11 @@ Required plugins:
 
 .. image:: img/sonar_webhook.png
 
+TODO
+====
+
+#) Adapt the demo to run natively on Openshift
+#) Implement tests in the dev and preprod pipelines
+#) Complete documenting the whole demo workflow
 
 .. _insecure: https://minikube.sigs.k8s.io/docs/tasks/registry/
