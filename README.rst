@@ -225,6 +225,8 @@ Required plugins:
 
 .. image:: img/sonar_webhook.png
 
+the web hook format is http[s]://<jenkins_url>/sonarqube-webhook/, with a '/' at the end.
+
 TODO
 ====
 
