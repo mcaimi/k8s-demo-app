@@ -53,7 +53,7 @@ spec:
         - name: "nexus_repo_url"
           value: "nexus.apps.kubernetes.local"
         - name: "artifact_name"
-          value: "org.redhat:openshift-demo-application-quarkus-runner:1.0.0-SNAPSHOT"
+          value: "org.redhat:openshift-demo-application-quarkus-runner:1.1.1-SNAPSHOT"
         - name: "nexus_auth"
           value: "jenkins:jenkins"
       noCache: true

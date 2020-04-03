@@ -1,0 +1,84 @@
+pipeline {
+  parameters {
+    string(name: 'DBENV', defaultValue: 'jenkins', description: 'The Database Environment to deploy the db into.')
+    string(name: 'ACTION', defaultValue: 'deploy', description: 'The reuqested action on the Database Deployment. "deploy" or "undeploy" are permitted values')
+    string(name: 'PARENT_BUILD_ID', defaultValue: '-001', description: 'Build ID of the caller pipeline')
+    string(name: 'REGISTRY_URL', defaultValue: 'registry.apps.kubernetes.local', description: 'Image registry URL')
+  }
+
+  agent {
+    kubernetes {
+        label "jenkins-slave-postgres-deploy"
+        defaultContainer "jnlp"
+        yaml k8sAgentPodYaml("${params.REGISTRY_URL}")
+    }
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  environment {
+    DEPLOY_ACTION = "${params.ACTION}"
+  }
+
+  stages {
+    stage ("POSTGRES: Deploy a new PDB") {
+      when {
+        environment ignoreCase: true, name: 'DEPLOY_ACTION', value: 'deploy'
+      }
+      steps {
+        container("jnlp") {
+          echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' k8s/deployments/pg${params.DBENV}/kustomization.yaml && kubectl apply -k k8s/deployments/pg${params.DBENV}/"
+        }
+      }
+      post {
+        failure {
+          container("jnlp") {
+            echo "DEPLOYMENT FAILED, UNDEPLOY... (${env.BUILD_ID})"
+            sh "kubectl delete -k k8s/deployments/pg${params.DBENV}/"
+          }
+        }
+      }
+    }
+
+    stage ("POSTGRES: Undeploy a PDB") {
+      when {
+        environment ignoreCase: true, name: 'DEPLOY_ACTION', value: 'undeploy'
+      }
+      steps {
+        container("jnlp") {
+          echo "[${params.DBENV}] REMOVING DATABASE INSTANCE"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' k8s/deployments/pg${params.DBENV}/kustomization.yaml && kubectl delete -k k8s/deployments/pg${params.DBENV}/"
+        }
+      }
+    }
+  }
+}
+
+def k8sAgentPodYaml(registryUrl) {
+  mavenYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: ci-jenkins
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: REG_URL/maven-agent:latest
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    """
+  return mavenYaml.replaceAll(~/REG_URL/, registryUrl)
+}

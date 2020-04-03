@@ -1,0 +1,69 @@
+pipeline {
+  parameters { 
+    string(name: 'REGISTRY_URL', defaultValue: 'docker-registry.default.svc:5000/jenkins', description: 'The docker registry to pull the image from')
+    string(name: 'BUILDCONFIG_NAME', defaultValue: 'jenkins-maven-agent', description: 'The buildconfig name to trigger on OCP')
+    string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The name of the Openshift cluster defined in Jenkins Settings')
+    string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
+  }
+
+  agent {
+    kubernetes {
+      label "jenkins-slave-openshift"
+      defaultContainer "jnlp"
+      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}", "${params.REGISTRY_URL}")
+    }
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  stages {
+    stage ("Start the MAVEN-AGENT BuildConfig on OCP") {
+      steps {
+        container("jnlp") {
+          script {
+            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}" ) {
+              echo "Running job in ${openshift.cluster()}'s project: ${openshift.project()}"
+                openshift.withProject( 'jenkins' ) {
+                  def buildconfig = openshift.selector('bc', "${params.BUILDCONFIG_NAME}")
+                  def build = buildconfig.startBuild()
+                  build.logs('-f')
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def k8sAgentPodYaml(serviceAccount, registryUrl) {
+  openshiftAgent = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: SA_NAME
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: URL_PLACEHOLDER/maven-agent:latest
+      imagePullPolicy: Always
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
+    """
+
+    return openshiftAgent.replaceAll(~/SA_NAME/, serviceAccount).replaceAll(~/URL_PLACEHOLDER/, registryUrl)
+}
+
