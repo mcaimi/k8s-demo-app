@@ -1,0 +1,46 @@
+bases:
+  - ../common
+namespace: NS_ID
+namePrefix: NS_ID-
+nameSuffix: "-BUILD_ID"
+commonLabels:
+  app: k8s-demo-app
+commonAnnotations:
+  deployedBy: "jenkins"
+  chain: "devops-pipeline"
+  environment: "noprod"
+patchesStrategicMerge:
+- ingress-route.yaml
+patchesJson6902:
+- path: mem-sizing.yaml
+  target:
+    group: apps.openshift.io
+    version: v1
+    kind: DeploymentConfig
+    name: java-runner
+secretGenerator:
+- name: postgres-init-secret
+  literals:
+  - postgres_app_user=preprod_user
+  - postgres_app_db=preprod_db
+  - postgres_app_user_password=hibernate
+  - db_driver=postgresql
+  - db_hostname=preprod-postgresql-service-BUILD_ID
+  - db_port=5432
+  - orm_log=true
+  - default_schema=preprod_schema
+  - db_generation=none
+  - hibernate_load_file=no-file
+  - jdbc_max_size=8
+  - jdbc_min_size=2
+  - flyway_migrate_at_start=true
+  - flyway_baseline_version=1.0.0
+  - flyway_baseline_description=Preprod_Initial
+  - flyway_connection_retries=300
+  - flyway_migration_table=preprod_history
+  - flyway_migrations_location=db/migrations/preprod
+  - flyway_baseline_on_migrate=false
+images:
+- name: java-runner
+  newName: registry.apps.kubernetes.local/java-runner
+  newTag: preprod

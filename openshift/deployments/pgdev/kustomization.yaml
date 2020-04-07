@@ -1,0 +1,35 @@
+bases:
+  - ../pgcommon
+namespace: NS_ID
+namePrefix: NS_ID-
+nameSuffix: "-BUILD_ID"
+commonLabels:
+  app: k8s-demo-app
+commonAnnotations:
+  deployedBy: "jenkins"
+  chain: "devops-pipeline"
+  environment: "noprod"
+patchesJson6902:
+- path: mem-sizing.yaml
+  target:
+    group: apps.openshift.io
+    version: v1
+    kind: DeploymentConfig
+    name: postgres
+images:
+- name: postgres
+  newName: docker.io/library/postgres
+  newTag: latest
+secretGenerator:
+- name: postgres-init-secret
+  literals:
+  - postgres_password=P0stgr3s
+  - postgres_db_name=pgdev_db
+  - postgres_user_name=pgdev
+  - postgres_app_user=dev_user
+  - postgres_app_db=dev_db
+  - postgres_app_user_password=hibernate
+configMapGenerator:
+- name: postgres-init-config
+  files:
+    - postgres-init-db.sh

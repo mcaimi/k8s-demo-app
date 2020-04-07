@@ -1,0 +1,30 @@
+bases:
+  - ../pgcommon
+namespace: NS_ID
+namePrefix: NS_ID-
+nameSuffix: "-BUILD_ID"
+commonLabels:
+  app: k8s-demo-app
+commonAnnotations:
+  deployedBy: "jenkins"
+  chain: "devops-pipeline"
+  environment: "build"
+patchesStrategicMerge:
+- mem-sizing.yaml
+images:
+- name: postgres
+  newName: docker.io/library/postgres
+  newTag: latest
+secretGenerator:
+- name: postgres-init-secret
+  literals:
+  - postgres_password=buildroot
+  - postgres_db_name=root_db
+  - postgres_user_name=buildroot
+  - postgres_app_user=hibernate
+  - postgres_app_db=hibernate_db
+  - postgres_app_user_password=hibernate
+configMapGenerator:
+- name: postgres-init-config
+  files:
+    - postgres-init-db.sh

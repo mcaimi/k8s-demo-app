@@ -1,0 +1,6 @@
+resources:
+  - postgres-deploymentconfig.yaml
+crds:
+  - crds/deploymentconfig.json
+configurations:
+  - crds/crd.yaml

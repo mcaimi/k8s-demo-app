@@ -1,0 +1,132 @@
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: java-runner
+spec:
+  replicas: 1
+  triggers: {}
+  strategy:
+    type: Rolling
+  paused: false
+  revisionHistoryLimit: 10
+  minReadySeconds: 0
+  selector:
+    matchLabels:
+      app: java-runner
+  template:
+    metadata:
+      labels:
+        app: java-runner
+    spec:
+      containers:
+      - image: java-runner
+        imagePullPolicy: Always
+        name: k8s-java-runner
+        env:
+          - name: DBUSER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: postgres_app_user
+          - name: DBPASS
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: postgres_app_user_password
+          - name: DBKIND
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: db_driver
+          - name: DBHOST
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: db_hostname
+          - name: DBPORT
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: db_port
+          - name: DBNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: postgres_app_db
+          - name: ORM_LOG
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: orm_log
+          - name: DEFAULT_SCHEMA
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: default_schema
+          - name: DB_GENERATION
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: db_generation
+          - name: HIBERNATE_LOAD_FILE
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: hibernate_load_file
+          - name: JDBC_MAX_SIZE
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: jdbc_max_size
+          - name: JDBC_MIN_SIZE
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: jdbc_min_size
+          - name: FLYWAY_MIGRATE_AT_START
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_migrate_at_start
+          - name: FLYWAY_BASELINE_VERSION
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_baseline_version
+          - name: FLYWAY_BASELINE_DESCRIPTION
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_baseline_description
+          - name: FLYWAY_CONNECTION_RETRIES
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_connection_retries
+          - name: FLYWAY_MIGRATION_TABLE
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_migration_table
+          - name: FLYWAY_MIGRATIONS_LOCATION
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_migrations_location
+          - name: FLYWAY_BASELINE_ON_MIGRATE
+            valueFrom:
+              secretKeyRef:
+                name: postgres-init-secret
+                key: flyway_baseline_on_migrate
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+      volumes: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+

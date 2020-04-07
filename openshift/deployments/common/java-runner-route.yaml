@@ -1,0 +1,15 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    description: "Java Runner Route for Openshift Router"
+  labels:
+    app: java-runner
+  name: java-runner-route
+spec:
+  host: k8s-demo.apps.kubernetes.local
+  path: "/" 
+  to:
+    kind: Service
+    name: java-runner-service
