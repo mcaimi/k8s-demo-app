@@ -18,14 +18,9 @@ commonAnnotations:
   kind: DeploymentConfig
 
 nameReference:
-- kind: PodTemplateSpec
-  fieldSpec:
-  - path: spec/template
-    kind: DeploymentConfig
-
 - kind: ConfigMap
   fieldSpec:
-  - path: spec/template/spec/volumes/configMap
+  - path: spec/template/spec/volumes/configMap/name
     kind: DeploymentConfig
 
 - kind: PersistentVolumeClaim
@@ -35,10 +30,6 @@ nameReference:
 
 - kind: Secret
   fieldSpec:
-  - path: spec/template/spec/containers/env/valueFrom/secretKeyRef
+  - path: spec/template/spec/containers/env/valueFrom/secretKeyRef/name
     kind: DeploymentConfig
 
-- kind: ResourceRequirements
-  fieldSpec:
-  - path: spec/template/spec/containers/resources
-    kind: DeploymentConfig

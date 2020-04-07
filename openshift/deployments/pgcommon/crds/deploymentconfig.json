@@ -40,7 +40,8 @@
 				},
 				"template/spec/volumes/persistentVolumeClaim": {
 					"x-kubernetes-object-ref-api-version": "v1",
-					"x-kubernetes-object-ref-kind": "PersistentVolumeClaim"
+					"x-kubernetes-object-ref-kind": "PersistentVolumeClaim",
+					"x-kubernetes-object-ref-name-key": "claimName"
 				},
 				"template/spec/containers/resources": {
 					"x-kubernetes-object-ref-api-version": "v1",
