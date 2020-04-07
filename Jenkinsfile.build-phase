@@ -8,6 +8,8 @@ pipeline {
     string(name: 'SONAR_INSTALLATION', defaultValue: 'jenkins-sonar', description: 'The SonarQube installation name')
     string(name: 'BUILD_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which builds are performed')
     string(name: 'REGISTRY_URL', defaultValue: 'registry.apps.kubernetes.local', description: 'The image registry url')
+    string(name: 'DBUSER', defaultValue: 'hibernate', description: 'Username for the test db')
+    string(name: 'DBPASS', defaultValue: 'hibernate', description: 'Password of the test user')
   }
 
   agent {
@@ -28,6 +30,21 @@ pipeline {
     DBHOST = "${env.BUILD_NS}-postgres-service-${env.BUILD_ID}"
     DBPORT = "5432"
     DBNAME = "hibernate_db"
+    DBUSER = "${params.DBUSER}"
+    DBPASS = "${params.DBPASS}"
+    DEFAULT_SCHEMA = "dev_schema"
+    HIBERNATE_LOAD_FILE = "no-file"
+    DB_GENERATION = "none"
+    ORM_LOG = true
+    JDBC_MAX_SIZE = 8
+    JDBC_MIN_SIZE = 2
+    FLYWAY_MIGRATE_AT_START = true
+    FLYWAY_BASELINE_VERSION = "1.0.0"
+    FLYWAY_BASELINE_DESCRIPTION = "Initial"
+    FLYWAY_CONNECTION_RETRIES = 100
+    FLYWAY_MIGRATION_TABLE = "dev_history"
+    FLYWAY_MIGRATIONS_LOCATION = "db/migrations/dev"
+    FLYWAY_BASELINE_ON_MIGRATE = true
   }
 
   options {
