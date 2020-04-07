@@ -4,7 +4,7 @@ commonLabels:
   version: v1
   kind: Service
 
-- path: spec/selector/matchLabels
+- path: spec/selector
   create: true
   kind: DeploymentConfig
 

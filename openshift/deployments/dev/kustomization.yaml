@@ -5,6 +5,7 @@ namePrefix: NS_ID-
 nameSuffix: "-BUILD_ID"
 commonLabels:
   app: k8s-demo-app
+  deploymentconfig: k8s-demo-app
 commonAnnotations:
   deployedBy: "jenkins"
   chain: "devops-pipeline"

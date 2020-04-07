@@ -12,12 +12,12 @@ spec:
   revisionHistoryLimit: 10
   minReadySeconds: 0
   selector:
-    matchLabels:
-      app: java-runner
+      deploymentconfig: java-runner
   template:
     metadata:
       labels:
         app: java-runner
+        deploymentconfig: java-runner
     spec:
       containers:
       - image: java-runner

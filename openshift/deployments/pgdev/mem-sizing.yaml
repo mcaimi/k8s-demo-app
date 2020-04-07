@@ -5,5 +5,5 @@
       cpu: "1"
       memory: "2Gi"
     requests:
-      memory: "500mi"
+      memory: "500Mi"
       cpu: "500m"
