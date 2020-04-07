@@ -20,7 +20,7 @@ patchesJson6902:
     kind: DeploymentConfig
     name: java-runner
 secretGenerator:
-- name: postgres-init-secret
+- name: quarkus-init-secret
   literals:
   - postgres_app_user=dev_user
   - postgres_app_db=dev_db

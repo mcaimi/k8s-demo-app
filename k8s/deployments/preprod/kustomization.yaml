@@ -13,7 +13,7 @@ patchesStrategicMerge:
 - mem-sizing.yaml
 - ingress-route.yaml
 secretGenerator:
-- name: postgres-init-secret
+- name: quarkus-init-secret
   literals:
   - postgres_app_user=preprod_user
   - postgres_app_db=preprod_db
