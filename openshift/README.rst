@@ -21,8 +21,7 @@ Jenkins needs two additional plugins to manage OpenShift Clusters:
 Since Openshift offers the ability to run builds natively through the employment of BuildConfig objects, the Jenkins CI flow
 differs slightly from the one that is run un K8S:
 
-- Jenkinsfile.agent-builder and Jenkinsfile.java-runner have been replaced with Jenkinsfile.buildconfig. This pipeline runs and monitors
-buildconfig runs through the use of the Openshift Pipeline Plugin in Jenkins
+- Jenkinsfile.agent-builder and Jenkinsfile.java-runner have been replaced with Jenkinsfile.buildconfig: this pipeline runs and monitors buildconfig runs through the use of the Openshift Pipeline Plugin in Jenkins
 - Jenkinsfile.build-phase now runs the image generation stage at the end of the pipeline (instead of leveraging another phase and another pipeline)
 
 The 'oc' binary has been added to the base maven-agent image.
@@ -34,10 +33,12 @@ Kustomize is a wonderful tool and it beats Templates hands down basically on eve
 Kubernetes extensions such as OCP3.11 Routes and DeploymentConfigs.
 
 Fortunately it can be patched by adding Custom Resources Definitions (CRDs) to the templates and by writing custom transformer rules.
-Look in the 'crds' folder in deployments/common and deployment/pgcommon.
+Look in the 'crds' folder in deployments/common and deployments/pgcommon.
 
 More information about Kustomize and CRDs can be found a this_ link and in the official kubernetes fields_ docs on GitHub.
+Also have a look at this commit_ as it gives insights on how CRDs are actually implemented in kustomize
 
 .. _here: https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html
 .. _this: https://github.com/kubernetes-sigs/kustomize/blob/master/examples/transformerconfigs/crd/README.md
 .. _fields: https://github.com/kubernetes-sigs/kustomize/blob/master/docs/fields.md
+.. _commit: https://github.com/kubernetes-sigs/kustomize/pull/105/commits/ea001347765a64bb52b1856f8f4fccec82ebcd67
