@@ -5,7 +5,7 @@ export DBPORT=5432
 export DBNAME=hibernate_db
 export DBUSER=hibernate
 export DBPASS=hibernate
-export DEFAULT_SCHEMA="dev_schema"
+export DEFAULT_SCHEMA="test_schema"
 export HIBERNATE_LOAD_FILE="no-file"
 export DB_GENERATION="none"
 export ORM_LOG=true
@@ -15,8 +15,8 @@ export FLYWAY_MIGRATE_AT_START=true
 export FLYWAY_BASELINE_VERSION="1.0.0"
 export FLYWAY_BASELINE_DESCRIPTION="Initial"
 export FLYWAY_CONNECTION_RETRIES=100
-export FLYWAY_MIGRATION_TABLE="dev_history"
-export FLYWAY_MIGRATIONS_LOCATION="db/migrations/dev"
+export FLYWAY_MIGRATION_TABLE="test_history"
+export FLYWAY_MIGRATIONS_LOCATION="db/migrations/test"
 export FLYWAY_BASELINE_ON_MIGRATE=true
 
 
