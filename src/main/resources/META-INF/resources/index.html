@@ -1,8 +1,8 @@
 <!doctype html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8"/>
-    <title>Quarkus' Simple CRUD Notes</title>
+    <title>Simple CRUD Notes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
     <style>
         input[type=number] {
@@ -21,139 +21,49 @@
     </style>
     <!-- Load AngularJS -->
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-    <script type="text/javascript">
-      var app = angular.module("NotesManagement", []);
+    <script src="notes_controller.js"></script>
+  </head>
+  <body ng-app="NotesManagement" ng-controller="NotesManagementController">
+    <div class="container">
+        <center><img src="redhat-logo.png"/></center>
+        <center><h1>Simple CRUD Notes</h1></center>
+        <p>This application demonstrates how a Quarkus application implements a CRUD endpoint to manage simple notes.
+            This simple frontend interacts via REST APIs with the Quarkus Backend.
+        </p>
+        <p>Behind the scenes, we have:
+            <ul>
+                <li>Hibernate ORM taking care of all CRUD operations</li>
+                <li>RESTEasy powering the REST API</li>
+                <li>CDI based dependency injection framework</li>
+                <li>Agroal for datasource implementation.</li>
+                <li>Kubernetes as a Container Platform.</li>
+                <li>Jenkins for CI/CD.</li>
+                <li>PostgreSQL for Database persistence.</li>
+            </ul>
+        </p>
 
-      //Controller Part
-      app.controller("NotesManagementController", function ($scope, $http) {
+        <h3>Add a new Note or Edit an existing one.</h3>
+        <form ng-submit="update()">
+            <div class="row">
+                <div class="col-6"><input type="text" placeholder="Name" ng-model="form.name" size="30"/></div>
+                <div class="col-6"><input type="text" placeholder="Contents" ng-model="form.contents" size="90"/></div>
+            </div>
+            <input type="submit" value="Save"/>
+        </form>
 
-        //Initialize page with default data which is blank in this example
-        $scope.notes = [];
-
-        $scope.form = {
-          id: -1,
-          name: "",
-          contents: ""
-        };
-
-        //Now load the data from server
-        _refreshPageData();
-
-        //HTTP POST/PUT methods for add/edit notes
-        $scope.update = function () {
-          var method = "";
-          var url = "";
-          var data = {};
-          if ($scope.form.id == -1) {
-            //Id is absent so add the new note - POST operation
-            method = "POST";
-            url = '/notes/publish';
-            data.name = $scope.form.name;
-            data.contents = $scope.form.contents;
-          } else {
-            //If Id is present, it's an edit - PUT operation
-            method = "PUT";
-            url = '/notes/' + $scope.form.id;
-            data.name = $scope.form.name;
-            data.contents = $scope.form.contents;
-          }
-
-          $http({
-            method: method,
-            url: url,
-            data: angular.toJson(data),
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }).then(_success, _error);
-        };
-
-        //HTTP DELETE- delete note by id
-        $scope.remove = function (note) {
-          $http({
-            method: 'DELETE',
-            url: '/notes/' + note.id
-          }).then(_success, _error);
-        };
-
-        //In case of an edit opetation, populate form with note data
-        $scope.edit = function (note) {
-          $scope.form.name = note.name;
-          $scope.form.contents = note.contents;
-          $scope.form.id = note.id;
-        };
-
-          /* Private Methods */
-        //HTTP GET- get all notes
-        function _refreshPageData() {
-          $http({
-            method: 'GET',
-            url: '/notes/all'
-          }).then(function successCallback(response) {
-            $scope.notes = angular.fromJson(response.data);
-          }, function errorCallback(response) {
-            console.log(response.statusText);
-          });
-        }
-
-        function _success(response) {
-          _refreshPageData();
-          _clearForm()
-        }
-
-        function _error(response) {
-          alert(response.data.message || response.statusText);
-        }
-
-        //Clear the form
-        function _clearForm() {
-          $scope.form.name = "";
-          $scope.form.contents = "";
-          $scope.form.id = -1;
-        }
-      });
-    </script>
-</head>
-<body ng-app="NotesManagement" ng-controller="NotesManagementController">
-
-<div class="container">
-    <h1>Quarkus' Simple CRUD Notes </h1>
-    <p>This application demonstrates how a Quarkus application implements a CRUD endpoint to manage simple notes.
-        This simple frontend interacts via REST APIs with the Quarkus Backend.
-    </p>
-    <p>Behind the scenes, we have:
-        <ul>
-            <li>Hibernate ORM taking care of all CRUD operations</li>
-            <li>RESTEasy powering the REST API</li>
-            <li>CDI based dependency injection framework</li>
-            <li>Agroal for datasource implementation.</li>
-            <li>Kubernetes as a Container Platform.</li>
-            <li>Jenkins for CI/CD.</li>
-            <li>PostgreSQL for Database persistence.</li>
-        </ul>
-    </p>
-
-    <h3>Add a new Note or Edit an existing one.</h3>
-    <form ng-submit="update()">
+        <h3>Published Notes List</h3>
         <div class="row">
-            <div class="col-6"><input type="text" placeholder="Name" ng-model="form.name" size="30"/></div>
-            <div class="col-6"><input type="text" placeholder="Contents" ng-model="form.contents" size="90"/></div>
+            <div class="col-2">Name</div>
+            <div class="col-3">Contents</div>
         </div>
-        <input type="submit" value="Save"/>
-    </form>
-
-    <h3>Published Notes List</h3>
-    <div class="row">
-        <div class="col-2">Name</div>
-        <div class="col-3">Contents</div>
-    </div>
-    <div class="row" ng-repeat="note in notes">
-        <div class="col-2">{{ note.name }}</div>
-        <div class="col-3">{{ note.contents }}</div>
-        <div class="col-4"><a ng-click="edit( note )" class="btn">Edit</a> <a ng-click="remove( note )" class="btn">Remove</a>
+        <div class="row" ng-repeat="note in notes">
+            <div class="col-2">{{ note.name }}</div>
+            <div class="col-3">{{ note.contents }}</div>
+            <div class="col-4"><a ng-click="edit( note )" class="btn">Edit</a> <a ng-click="remove( note )" class="btn">Remove</a>
+            </div>
         </div>
-    </div>
-</div>
 
-</body>
+        <div><center><h1>Powered By: </h1><img src="quarkus-logo.png" style="width:30%;"/></center></div>
+    </div>
+  </body>
 </html>
