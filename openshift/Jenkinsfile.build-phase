@@ -34,7 +34,7 @@ pipeline {
     DBNAME = "hibernate_db"
     DBUSER = "${params.DBUSER}"
     DBPASS = "${params.DBPASS}"
-    DEFAULT_SCHEMA = "dev_schema"
+    FLYWAY_DEFAULT_SCHEMA = "dev_schema"
     HIBERNATE_LOAD_FILE = "no-file"
     DB_GENERATION = "none"
     ORM_LOG = true

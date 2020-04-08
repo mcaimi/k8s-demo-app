@@ -58,7 +58,7 @@ spec:
               secretKeyRef:
                 name: quarkus-init-secret
                 key: orm_log
-          - name: DEFAULT_SCHEMA
+          - name: FLYWAY_DEFAULT_SCHEMA
             valueFrom:
               secretKeyRef:
                 name: quarkus-init-secret

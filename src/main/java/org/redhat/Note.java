@@ -6,12 +6,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
+import javax.persistence.QueryHint;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "notes")
-@NamedQuery(name = "Notes.AllNotes", query = "SELECT n FROM Note n ORDER BY n.id")
+@NamedQuery(name = "Notes.AllNotes", query = "SELECT n FROM Note n ORDER BY n.id", hints = @QueryHint(name = "org.hibernate.cacheable", value = "false"))
 public class Note {
     @Id
     @Column(unique = true)
