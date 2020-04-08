@@ -32,3 +32,8 @@ nameReference:
   fieldSpec:
   - path: spec/template/spec/containers/resources
     kind: DeploymentConfig
+
+- kind: Service
+  fieldSpec:
+  - path: spec/to
+    kind: Route
