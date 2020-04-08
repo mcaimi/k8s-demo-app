@@ -12,12 +12,11 @@ spec:
   revisionHistoryLimit: 10
   minReadySeconds: 0
   selector:
-      deploymentconfig: postgres
+      app: postgres
   template:
     metadata:
       labels:
         app: postgres
-        deploymentconfig: postgres
     spec:
       containers:
       - image: docker.io/library/postgres:latest

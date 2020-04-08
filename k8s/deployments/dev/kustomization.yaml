@@ -19,7 +19,7 @@ secretGenerator:
   - postgres_app_db=dev_db
   - postgres_app_user_password=hibernate
   - db_driver=postgresql
-  - db_hostname=dev-postgresql-service-BUILD_ID
+  - db_hostname=dev-postgres-service-BUILD_ID
   - db_port=5432
   - orm_log=true
   - default_schema=dev_schema
