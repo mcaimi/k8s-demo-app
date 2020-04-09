@@ -62,6 +62,26 @@ rules:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
+  name: jenkins
+  namespace: prod
+rules:
+- apiGroups: ["*"]
+  resources: ["builds", "buildconfigs", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create", "delete"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
   name: jenkins-admin
   namespace: jenkins
 rules:
