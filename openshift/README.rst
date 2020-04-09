@@ -120,8 +120,36 @@ For example, to let Kustomize correctly patch the VolumeClaimName in the deploym
   - path: spec/template/spec/volumes/persistentVolumeClaim/claimName
     kind: DeploymentConfig
 
+With CRDs baked in into kustomization templates, the 'patchesStrategicMerge' directive in kustomization.yaml will not work correctly. The workaround is to define a static patch:
+
+.. code:: yaml
+
+  - op: add
+  path: "/spec/template/spec/containers/0/resources"
+  value:
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+    requests:
+      memory: "500Mi"
+      cpu: "500m"
+  
+and use the 'patchesJson6902' strategy:
+
+.. code:: yaml
+
+  patchesJson6902:
+  - path: mem-sizing.yaml
+    target:
+      group: apps.openshift.io
+      version: v1
+      kind: DeploymentConfig
+      name: java-runner
+
+directly into the kustomization.yaml file.
 
 More information about Kustomize and CRDs can be found a this_ link and in the official kubernetes fields_ docs on GitHub.
+
 Also have a look at this commit_ as it gives insights on how CRDs are actually implemented in kustomize
 
 .. _here: https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html
