@@ -17,6 +17,15 @@ This demo makes use of the following projects:
 It is not a lightweight setup, as at least 4 vCPUs and 8GB of RAM are needed for the minikube vm.
 Also, since this demo *is still WIP*, this documentation is far from being finished and is to be considered **INCOMPLETE** for the time being.
 
+The workshop is aimed at learning a possible way to implement an e2e CI/CD pipeline with the mentioned technologies, and it is loosely divided in 6 'steps':
+
+1) BUILD A CUSTOM K8S BUILD AGENT (Referencing pipeline **Jenkinsfile.agent-builder**)
+2) BUILD THE SOFTWARE ARTIFACT (Referencing pipeline **Jenkinsfile.build-phase**)
+3) BUILD THE RUNNABLE CONTAINER IMAGE (Referencing pipeline **Jenkinsfile.java-runner**)
+4) DEPLOY A COMPANION DB (Referencing pipeline **Jenkinsfile.create-pdb**)
+5) DEPLOY THE APPLICATION (Referencing pipeline **Jenkinsfile.app_deploy**, unfinished)
+6) ORCHESTRATE THE FLOW (Referencing pipeline **Jenkinsfile.master**)
+
 PREREQUISITES
 -------------
 
@@ -108,13 +117,13 @@ A matching role binding also must be created in these namespaces:
 
 .. code:: bash
 
-  kubectl apply -f k8s/jenkins-role.yaml
+  kubectl apply -f k8s/components/jenkins-role.yaml
 
 #) Create jenkins rolebinding
 
 .. code:: bash
 
-  kubectl apply -f k8s/jenkins-rolebinding.yaml
+  kubectl apply -f k8s/components/jenkins-rolebinding.yaml
 
 DEPLOY COMPONENTS
 -----------------
