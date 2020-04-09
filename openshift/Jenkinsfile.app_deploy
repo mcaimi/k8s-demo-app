@@ -1,0 +1,245 @@
+pipeline {
+  parameters { 
+    string(name: 'REGISTRY_URL', defaultValue: 'docker-registry.default.svc:5000', description: 'The docker registry to push the image to')
+    string(name: 'CI_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which the software image has been built')
+    string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the built application container')
+    string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the built application container')
+    string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
+    string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The configured Openshift Cluster to connect to')
+  }
+
+  agent {
+    kubernetes {
+      label "jenkins-slave-app-deployer"
+      defaultContainer "jnlp"
+      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}", "${params.REGISTRY_URL}/${params.CI_NAMESPACE}")
+    }
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  stages {
+    stage ("TAG IMAGE FOR DEV DEPLOYMENT") {
+      steps {
+        container("jnlp") {
+          echo "TAGGING CONTAINER: ${params.CI_NAMESPACE}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} in DEV (${env.BUILD_ID})"
+          sh "oc tag ${params.CI_NAMESPACE}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} dev/${params.IMAGE_NAME}:dev"
+        }
+      }
+    }
+
+    stage ("DEPLOY AND TEST IN DEV") {
+      steps {
+        container("jnlp") {
+          echo "DEPLOYING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
+          
+          echo " -> Deploying the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "dev"),
+            string(name: 'ACTION', value: "deploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/dev-template.yaml"
+          sh "oc apply -f /tmp/dev-template.yaml"
+
+          echo "Monitoring Rollout (DEV)..."
+          script {
+            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}") {
+              monitorRollout("dev", "${params.IMAGE_NAME}", "${env.BUILD_ID}", false)
+            }
+          }
+        }
+        container("jnlp") {
+          echo "TESTING APPLICATION IN DEV NAMESPACE (${env.BUILD_ID})"
+          sh "bash openshift/deployments/dev/tests.sh"
+        }
+      }
+      post {
+        failure {
+          container("jnlp") {
+            echo "DEV DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
+
+            echo " -> Removing the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+            build job: 'postgres-database-pipeline', parameters: [
+              string(name: 'DBENV', value: "dev"),
+              string(name: 'ACTION', value: "undeploy"),
+              string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+            ]
+
+            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/dev-template.yaml"
+            sh "oc delete -f /tmp/dev-template.yaml"
+          }
+          container("jnlp") {
+            echo "UNTAGGING IMAGE FROM DEV ENVIRONMENT"
+            sh "oc tag -d dev/${params.IMAGE_NAME}:dev"
+          }
+        }
+      }
+    }
+
+    stage ("PROMOTE IMAGE TO PREPROD ENVIRONMENT") {
+      steps {
+        container("jnlp") {
+          echo "TAGGING CONTAINER: ${params.CI_NAMESPACE}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} in PREPROD (${env.BUILD_ID})"
+          sh "oc tag ${params.CI_NAMESPACE}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} preprod/${params.IMAGE_NAME}:preprod"
+        }
+      }
+    }
+
+    stage ("DEPLOY AND TEST IN PREPROD") {
+      steps {
+        container("jnlp") {
+          echo "DEPLOYING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
+
+          echo " -> Deploying the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "preprod"),
+            string(name: 'ACTION', value: "deploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/pre-template.yaml"
+          sh "oc apply -f /tmp/pre-template.yaml"
+
+          echo "Monitoring Rollout (PREPROD)..."
+          script {
+            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}") {
+              monitorRollout("preprod", "${params.IMAGE_NAME}", "${env.BUILD_ID}", false)
+            }
+          }
+        }
+        container("jnlp") {
+          echo "TESTING APPLICATION IN PREPROD NAMESPACE (${env.BUILD_ID})"
+          sh "bash k8s/deployments/preprod/tests.sh"
+        }
+      }
+      post {
+        failure {
+          container("jnlp") {
+            echo "PREPROD DEPLOYMENT FAILED TESTS, UNDEPLOY... (${env.BUILD_ID})"
+
+            echo " -> Removing the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+            build job: 'postgres-database-pipeline', parameters: [
+              string(name: 'DBENV', value: "preprod"),
+              string(name: 'ACTION', value: "undeploy"),
+              string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+            ]
+
+            sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/pre-template.yaml"
+            sh "oc delete -f /tmp/pre-template.yaml"
+          }
+          container("jnlp") {
+            echo "UNTAGGING IMAGE FROM PREPROD ENVIRONMENT"
+            sh "oc tag -d preprod/${params.IMAGE_NAME}:preprod"
+          }
+        }
+      }
+    }
+
+    stage ("PROMOTE PREPROD IMAGE TO PROD") {
+      steps {
+        container("jnlp") {
+          echo "TAGGING CONTAINER: ${params.CI_NAMESPACE}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} in PROD (${env.BUILD_ID})"
+          sh "oc tag ${params.CI_NAMESPACE}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} prod/${params.IMAGE_NAME}:prod"
+        }
+      }
+      // OK, image ready for production, cleanup non-prod environments
+      post {
+        success {
+          echo "CLEANING UP... (${env.BUILD_ID})"
+
+          echo " -> Cleaning up application deployment in DEV ENVIRONMENT (${env.BUILD_ID})"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/dev-template.yaml"
+          sh "oc delete -f /tmp/dev-template.yaml"
+          echo " -> Cleaning up the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "dev"),
+            string(name: 'ACTION', value: "undeploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+
+          echo " -> Cleaning up application deployment in PREPROD ENVIRONMENT (${env.BUILD_ID})"
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/pre-deployment.yaml"
+          sh "oc delete -f /tmp/pre-deployment.yaml"
+          echo " -> Cleaning up the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "preprod"),
+            string(name: 'ACTION', value: "undeploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+        }
+      }
+    }
+
+    // final step..
+    stage ("ROLLOUT SOFTWARE PACKAGE IN PRODUCTION ENVIRONMENT") {
+      steps {
+        container ('jnlp') {
+          echo "Confirm PRODUCTION DEPLOYMENT!"
+          script {
+            input "Approve Deployment in Production Env?"
+          }
+          echo "Rolling out DeploymentConfig to latest version.."
+          script {
+            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}" ) {
+              monitorRollout("prod", "${params.IMAGE_NAME}", "latest", true)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def k8sAgentPodYaml(serviceAccount, registryUrl) {
+  dockerInDockerYaml = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: SA_NAME
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: URL_PLACEHOLDER/maven-agent:latest
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    """
+
+    return dockerInDockerYaml.replaceAll(~/SA_NAME/, serviceAccount).replaceAll(~/URL_PLACEHOLDER/, registryUrl)
+}
+
+def monitorRollout(String deployEnvironment, imageName, buildId, Boolean rollout) {
+  openshift.withProject( deployEnvironment ) {
+    def deploymentConfigName = "$deployEnvironment-$imageName-$buildId"
+
+    if (rollout) {
+      openshift.selector('dc', deploymentConfigName).rollout().latest()
+    }
+
+    // Rollout monitoring
+    def latestVersion = openshift.selector('dc', deploymentConfigName).object().status.latestVersion
+    def replicationController = openshift.selector('rc', "$deploymentConfigName-${latestVersion}")
+
+    // wait for deployment completion
+    timeout (time: 10, unit: 'MINUTES') {
+      replicationController.untilEach(1){
+          def rcMap = it.object()
+          return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
+        }
+    }
+
+  }
+}
