@@ -56,7 +56,7 @@ to add registry url to insecure registries on the local host machine
 
 .. code:: bash
 
-  for i in jenkins dev preprod; do
+  for i in jenkins dev preprod prod; do
     kubectl create ns $i
   done
 
@@ -104,12 +104,14 @@ A dedicated service account needs to be deployed on kubernetes in all the releva
   kubectl create sa ci-jenkins -n jenkins
   kubectl create sa ci-jenkins -n dev
   kubectl create sa ci-jenkins -n preprod
+  kubectl create sa ci-jenkins -n prod
 
 A custom role is also needed for the ci-jenkins service account to let the automation work. This role grants:
 
 - Ability to monitor, deploy, undeploy manifests in the jenkins namespace
 - Ability to monitor, deploy, undeploy manifests in the dev namespace
 - Ability to monitor, deploy, undeploy manifests in the preprod namespace
+- Ability to monitor, deploy, undeploy manifests in the prod namespace
 
 A matching role binding also must be created in these namespaces:
 
