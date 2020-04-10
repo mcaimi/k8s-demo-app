@@ -140,31 +140,44 @@ pipeline {
           sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
         }
       }
+      // cleanup environment after successful promote to prod
+      post {
+        success {
+          echo "CLEANING UP... (${env.BUILD_ID})"
+
+          echo " -> Cleaning up application deployment in DEV ENVIRONMENT (${env.BUILD_ID})"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/dev/kustomization.yaml && kubectl delete -k k8s/deployments/dev/"
+          echo " -> Cleaning up the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "dev"),
+            string(name: 'ACTION', value: "undeploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+
+          echo " -> Cleaning up application deployment in PREPROD ENVIRONMENT (${env.BUILD_ID})"
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/preprod/kustomization.yaml && kubectl delete -k k8s/deployments/preprod/"
+          echo " -> Cleaning up the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
+          build job: 'postgres-database-pipeline', parameters: [
+            string(name: 'DBENV', value: "preprod"),
+            string(name: 'ACTION', value: "undeploy"),
+            string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
+          ]
+        }
+      }
     }
-  }
 
-  // cleanup
-  post {
-    success {
-      echo "CLEANING UP... (${env.BUILD_ID})"
-
-      echo " -> Cleaning up application deployment in DEV ENVIRONMENT (${env.BUILD_ID})"
-      sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/dev/kustomization.yaml && kubectl delete -k k8s/deployments/dev/"
-      echo " -> Cleaning up the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
-      build job: 'postgres-database-pipeline', parameters: [
-        string(name: 'DBENV', value: "dev"),
-        string(name: 'ACTION', value: "undeploy"),
-        string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
-      ]
-
-      echo " -> Cleaning up application deployment in PREPROD ENVIRONMENT (${env.BUILD_ID})"
-      sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' k8s/deployments/preprod/kustomization.yaml && kubectl delete -k k8s/deployments/preprod/"
-      echo " -> Cleaning up the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
-      build job: 'postgres-database-pipeline', parameters: [
-        string(name: 'DBENV', value: "preprod"),
-        string(name: 'ACTION', value: "undeploy"),
-        string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
-      ]
+    stage ("ROLLOUT IMAGE IN PRODUCTION") {
+      steps {
+        container("jnlp") {
+          echo "Confirm PRODUCTION DEPLOYMENT!"
+          script {
+            input "Approve Deployment in Production Env?"
+          }
+          echo "ROLLING OUT APPLICATION IN PROD NAMESPACE (${env.BUILD_ID})"
+          sh "kubectl set image deployment/`kubectl get deployment -n prod --selector app=k8s-quarkus-app -o jsonpath='{.items..metadata.name}'` `kubectl get deployment -n prod --selector app=k8s-quarkus-app -o jsonpath='{.items..spec.template.spec.containers[0].name}'`=${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
+          sh "kubectl rollout status -w deployment/`kubectl get deployment -n prod --selector app=k8s-postgres-app -o jsonpath='{.items..metadata.name}'`"
+        }
+      }
     }
   }
 }
