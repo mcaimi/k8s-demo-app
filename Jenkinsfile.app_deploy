@@ -175,6 +175,7 @@ pipeline {
           }
           echo "ROLLING OUT APPLICATION IN PROD NAMESPACE (${env.BUILD_ID})"
           sh "kubectl set image deployment/`kubectl get deployment -n prod --selector app=k8s-quarkus-app -o jsonpath='{.items..metadata.name}'` `kubectl get deployment -n prod --selector app=k8s-quarkus-app -o jsonpath='{.items..spec.template.spec.containers[0].name}'`=${params.REGISTRY_URL}/${params.IMAGE_NAME}:prod"
+          sh "kubectl rollout restart deployment/`kubectl get deployment -n prod --selector app=k8s-postgres-app -o jsonpath='{.items..metadata.name}'`"
           sh "kubectl rollout status -w deployment/`kubectl get deployment -n prod --selector app=k8s-postgres-app -o jsonpath='{.items..metadata.name}'`"
         }
       }

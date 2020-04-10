@@ -19,7 +19,7 @@ secretGenerator:
   - postgres_app_db=prod_db
   - postgres_app_user_password=hibernate
   - db_driver=postgresql
-  - db_hostname=prod-postgres-service-latest
+  - db_hostname=production-postgres-service-latest
   - db_port=5432
   - orm_log=true
   - default_schema=prod_schema
