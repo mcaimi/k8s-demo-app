@@ -1,10 +1,10 @@
 K8S CI/CD DEMO
 ==============
 
-This is a work-in-progress demo of a CI/CD workflow based on Kubernetes and Jenkins.
+This is a work-in-progress demo of a CI/CD workflow based on Kubernetes and Jenkins. Look here for `openshift`_ native deployments.
 This demo makes use of the following projects:
 
-- Kubernetes as a container orchestrator
+- Kubernetes/OpenShift as a container orchestrator
 - Kustomize for templating
 - Jenkins as a pipeline job runner
 - SonarQube for code quality and coverage measurements
@@ -12,6 +12,7 @@ This demo makes use of the following projects:
 - JUnit for unit testing
 - JaCoCo for code coverage
 - Quarkus as an application runtime
+- Flyway as Database schema management
 - PostgreSQL for the database backend
 
 It is not a lightweight setup, as at least 4 vCPUs and 8GB of RAM are needed for the minikube vm.
@@ -241,8 +242,10 @@ the web hook format is http[s]://<jenkins_url>/sonarqube-webhook/, with a '/' at
 TODO
 ====
 
-#) Adapt the demo to run natively on Openshift
 #) Implement tests in the dev and preprod pipelines
+#) Add support for Liquibase
+#) Integrate Istio
 #) Complete documenting the whole demo workflow
 
 .. _insecure: https://minikube.sigs.k8s.io/docs/tasks/registry/
+.. _openshift: https://github.com/mcaimi/k8s-demo-app/tree/master/openshift
