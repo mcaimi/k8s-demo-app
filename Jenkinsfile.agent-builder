@@ -19,6 +19,19 @@ pipeline {
   }
 
   stages {
+    stage ("DOCKERFILE LINTING") {
+      steps {
+        container('hadolint') {
+            sh "hadolint --config /tmp/hadolint.yaml containers/${BUILD_NAME}/Dockerfile | tee -a ${params.BUILD_NAME}-linting-output.txt"
+        }
+      }
+      post {
+          always {
+              archiveArtifacts "${params.BUILD_NAME}-linting-output.txt"
+          }
+      }
+    }
+
     stage ("BUILD DOCKER IMAGE") {
       steps {
         container("docker-in-docker") {
@@ -69,6 +82,16 @@ spec:
             fieldPath: status.podIP
       - name: DOCKER_HOST
         value: tcp://localhost:2375
+    - name: hadolint
+      image: docker.io/hadolint/hadolint:latest
+      imagePullPolicy: Always
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - name: hadolint-config
+          mountPath: /tmp/hadolint.yaml
+          subPath: hadolint.yaml
     - name: docker-in-docker
       image: docker.io/library/docker:19.03.5-dind
       securityContext:
@@ -83,6 +106,12 @@ spec:
         - name: dind-storage
           mountPath: /var/lib/docker
   volumes:
+    - name: hadolint-config
+      configMap:
+        name: hadolint-config
+        items:
+        - key: hadolint.yaml
+          path: hadolint.yaml
     - name: docker-registry-config
       configMap:
         name: insecure-registry-config

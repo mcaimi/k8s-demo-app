@@ -1,0 +1,8 @@
+ignored:
+  - DL3000
+  - SC1010
+
+trustedRegistries:
+  - docker.io
+  - registry.apps.kubernetes.local
+  - docker-registry.default.svc:5000
