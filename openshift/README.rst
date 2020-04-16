@@ -22,6 +22,7 @@ Setup Differences
   kubectl create sa ci-jenkins -n jenkins
   kubectl create sa ci-jenkins -n dev
   kubectl create sa ci-jenkins -n preprod
+  kubectl create sa ci-jenkins -n prod
 
 Roles and RoleBindings are found under the openshift/components folder:
 

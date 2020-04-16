@@ -14,6 +14,7 @@ This demo makes use of the following projects:
 - Quarkus as an application runtime
 - Flyway as Database schema management
 - PostgreSQL for the database backend
+- Hadolint for Dockerfile linting
 
 It is not a lightweight setup, as at least 4 vCPUs and 8GB of RAM are needed for the minikube vm.
 Also, since this demo *is still WIP*, this documentation is far from being finished and is to be considered **INCOMPLETE** for the time being.
@@ -72,6 +73,12 @@ Create the configmap insecure-registry-config from configmaps/components/docker-
 .. code:: bash
 
   kubectl apply -f configmaps/components/docker-in-docker-insecure-registry-cm.yaml -n jenkins
+
+And finally edit and create the hadolint configuration configmap to fine-tune the Dockerfile linter:
+
+.. code:: bash
+
+  kubectl apply -f configmaps/components/hadolint-config-cm.yaml -n jenkins
 
 4) Add all needed urls to a local DNS resolver.
 
