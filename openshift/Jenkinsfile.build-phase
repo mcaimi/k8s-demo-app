@@ -186,6 +186,7 @@ pipeline {
     stage ('INVOKE: Start the JAVA-RUNNER BuildConfig on OCP.') {
       steps {
         build job: 'ocp-buildconfig-handler', parameters: [
+            string(name: 'AGENT_NAME', value: "java-runner"),
             string(name: 'BUILDCONFIG_NAME', value: "jenkins-java-runner"),
             string(name: 'OPENSHIFT_CLUSTER', value: "${params.OPENSHIFT_CLUSTER}"),
             string(name: 'SERVICE_ACCOUNT', value: "${params.SERVICE_ACCOUNT}"),

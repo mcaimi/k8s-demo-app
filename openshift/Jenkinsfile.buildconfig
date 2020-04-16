@@ -1,6 +1,7 @@
 pipeline {
   parameters { 
     string(name: 'REGISTRY_URL', defaultValue: 'docker-registry.default.svc:5000/jenkins', description: 'The docker registry to pull the image from')
+    string(name: 'AGENT_NAME', defaultValue: 'maven-agent', description: 'The name of the agent as found on the SCM')
     string(name: 'BUILDCONFIG_NAME', defaultValue: 'jenkins-maven-agent', description: 'The buildconfig name to trigger on OCP')
     string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The name of the Openshift cluster defined in Jenkins Settings')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
@@ -20,6 +21,19 @@ pipeline {
   }
 
   stages {
+    stage ("DOCKERFILE LINTING") {
+      steps {
+        container('hadolint') {
+            sh "hadolint --config /tmp/hadolint.yaml containers/${params.AGENT_NAME}/Dockerfile | tee -a ${params.AGENT_NAME}-linting-output.txt"
+        }
+      }
+      post {
+          always {
+              archiveArtifacts "${params.AGENT_NAME}-linting-output.txt"
+          }
+      }
+    }
+
     stage ("Start the MAVEN-AGENT BuildConfig on OCP") {
       steps {
         container("jnlp") {
@@ -62,6 +76,23 @@ spec:
             fieldPath: status.podIP
       - name: DOCKER_HOST
         value: tcp://localhost:2375
+    - name: hadolint
+      image: docker.io/hadolint/hadolint:latest
+      imagePullPolicy: Always
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - name: hadolint-config
+          mountPath: /tmp/hadolint.yaml
+          subPath: hadolint.yaml
+  volumes:
+    - name: hadolint-config
+      configMap:
+        name: hadolint-config
+        items:
+        - key: hadolint.yaml
+          path: hadolint.yaml
     """
 
     return openshiftAgent.replaceAll(~/SA_NAME/, serviceAccount).replaceAll(~/URL_PLACEHOLDER/, registryUrl)
