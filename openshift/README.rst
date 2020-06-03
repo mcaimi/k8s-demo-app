@@ -10,6 +10,55 @@ must be granted the 'anyuid' SCC:
 
 this must be done for every namespace in which jenkins needs to deploy.
 
+Also depending on which Storage Class Backend employed, it may be necessary to set up an fsGroup securityContext override (or supplementalGroups for NFS).
+The fastest way is just granting the anyuid SCC to the default service account as mentioned before but this is not good practice outside POC and demo environments.
+
+For fsGroup in particular, a new SA can be created and granted the nonroot SCC:
+
+.. code:: bash
+
+  $ oc create sa nexus -n jenkins
+  $ oc adm policy add-scc-to-user nonroot system:serviceaccount:jenkins:nexus
+
+The nonroot SCC grants the RunAsAny fsGroup capability:
+
+.. code:: bash
+
+  $ oc get scc
+  NAME                 PRIV      CAPS      SELINUX     RUNASUSER          FSGROUP     SUPGROUP    PRIORITY   READONLYROOTFS   VOLUMES
+  [...]
+  nonroot              false     []        MustRunAs   MustRunAsNonRoot   RunAsAny    RunAsAny    <none>     false            [configMap downwardAPI emptyDir persistentVolumeClaim projected secret]
+  [...]
+
+Then set up the deploymentconfig to run under the new service account to inherit the SCC:
+
+.. code:: yaml
+
+  ---
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: nexus
+    namespace: jenkins
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: nexus
+    template:
+      metadata:
+        labels:
+          app: nexus
+      spec:
+        serviceAccount: nexus
+        automountServiceAccountToken: true
+        containers:
+      [...]
+      schedulerName: default-scheduler
+      securityContext:
+         fsGroup: 200
+      [...]
+
 for more information about SCCs, see official documentation here_
 
 Setup Differences
