@@ -78,7 +78,7 @@ And finally edit and create the hadolint configuration configmap to fine-tune th
 
 .. code:: bash
 
-  kubectl apply -f configmaps/components/hadolint-config-cm.yaml -n jenkins
+  kubectl create cm hadolint-config-cm --from-file=hadolint.yaml=configmaps/components/hadolint.yaml
 
 4) Add all needed urls to a local DNS resolver.
 
@@ -143,6 +143,18 @@ In the 'jenkins' namespace, deploy:
 - The jenkins master server
 - A SonarQube instance
 - A Nexus Repository instance
+
+Deploy the SonarQube PostgreSQL backend instance:
+
+.. code:: bash
+
+  $ kubectl apply -k k8s/deployments/pgsonar/ -n jenkins
+
+Create the configmap used by sonar to connect to the database:
+
+.. code:: bash
+
+  $ kubectl create configmap sonar-properties --from-literal=username=sonarqube --from-literal=password=sonarpass --from-literal=connstring=jdbc:postgresql://sonarqubepostgres-service:5432/sonar_db?currentSchema=public
 
 Deployment manifests are stored in the 'k8s/components' folder.
 
