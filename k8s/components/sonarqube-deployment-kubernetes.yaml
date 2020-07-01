@@ -2,18 +2,6 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sonar-conf-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: "standard"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
   name: sonar-data-claim
 spec:
   accessModes:
@@ -66,9 +54,33 @@ spec:
       - image: docker.io/library/sonarqube:latest
         imagePullPolicy: Always
         name: sonarqube
+        env:
+          - name: transport.host
+            value: localhost
+          - name: sonarqube_conf
+            value: "/opt/sonarqube/conf"
+          - name: sonarqube_extensions
+            value: "/opt/sonarqube/extensions"
+          - name: sonarqube_logs
+            value: "/opt/sonarqube/logs"
+          - name: sonarqube_data
+            value: "/opt/sonarqube/data"
+          - name: sonar.jdbc.username
+            valueFrom:
+              configMapKeyRef:
+                name: sonar-properties
+                key: username
+          - name: sonar.jdbc.password
+            valueFrom:
+              configMapKeyRef:
+                name: sonar-properties
+                key: password
+          - name: sonar.jdbc.url
+            valueFrom:
+              configMapKeyRef:
+                name: sonar-properties
+                key: connstring
         volumeMounts:
-          - mountPath: "/opt/sonarqube/conf"
-            name: sonar-conf-volume
           - mountPath: "/opt/sonarqube/data"
             name: sonar-data-volume
           - mountPath: "/opt/sonarqube/logs"
@@ -86,9 +98,9 @@ spec:
             memory: "2Gi"
             cpu: "1"
       volumes:
-        - name: sonar-conf-volume
-          persistentVolumeClaim:
-            claimName: sonar-conf-claim
+        - name: sonar-properties
+          configMap:
+            name: sonar-properties
         - name: sonar-data-volume
           persistentVolumeClaim:
             claimName: sonar-data-claim

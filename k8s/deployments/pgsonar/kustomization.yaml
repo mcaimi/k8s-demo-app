@@ -1,0 +1,29 @@
+bases:
+  - ../pgcommon
+namespace: jenkins
+namePrefix: sonarqube
+commonLabels:
+  app: k8s-demo-app
+commonAnnotations:
+  deployedBy: "operator"
+  chain: "devops-tools"
+  environment: "jenkins"
+patchesStrategicMerge:
+- mem-sizing.yaml
+images:
+- name: postgres
+  newName: docker.io/library/postgres
+  newTag: latest
+secretGenerator:
+- name: postgres-init-secret
+  literals:
+  - postgres_password=rootpass
+  - postgres_db_name=root
+  - postgres_user_name=root
+  - postgres_app_user=sonarqube
+  - postgres_app_db=sonar_db
+  - postgres_app_user_password=sonarpass
+configMapGenerator:
+- name: postgres-init-config
+  files:
+    - postgres-init-db.sh
