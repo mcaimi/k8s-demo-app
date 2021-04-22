@@ -165,6 +165,13 @@ Deployment manifests are stored in the 'k8s/components' folder.
     kubectl apply -f k8s/components/$component.yaml -n jenkins
   done
 
+On minikube, if SonarQube does not get to run (i.e. pod remains in CrashLoopBack state):
+
+.. code:: bash
+
+  $ minikube ssh
+  $ sysctl -w vm.max_map_count=262144
+
 Once deployed, check that everything is running
 
 .. image:: img/jenkins_ns.png
