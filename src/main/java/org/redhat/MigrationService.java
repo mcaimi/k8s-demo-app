@@ -14,7 +14,7 @@ public class MigrationService {
     Flyway flywayMigrator;
 
     @Inject
-    @FlywayDataSource("default")
+//    @FlywayDataSource("default")
     Flyway flywayDefault;
 
     private static final Logger LOGGER = Logger.getLogger(MigrationService.class.getName());
