@@ -156,7 +156,7 @@ Create the configmap used by sonar to connect to the database:
 
 .. code:: bash
 
-  $ kubectl create configmap sonar-properties --from-literal=username=sonarqube --from-literal=password=sonarpass --from-literal=connstring=jdbc:postgresql://sonarqubepostgres-service:5432/sonar_db?currentSchema=public
+  $ kubectl create configmap sonar-properties --from-literal=username=sonarqube --from-literal=password=sonarpass --from-literal=connstring=jdbc:postgresql://sonarqubepostgres-service:5432/sonar_db?currentSchema=public -n jenkins
 
 Deployment manifests are stored in the 'k8s/components' folder.
 
@@ -182,6 +182,7 @@ Required Jenkins Plugins installed in the Master Node:
 
 - Kubernetes plugin
 - Kubernetes credentials
+- Nexus Platform
 - Nexus Artifact Uploader
 - SonarQube Scanner
 - JaCoCo plugin
