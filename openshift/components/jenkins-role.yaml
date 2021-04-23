@@ -1,6 +1,6 @@
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jenkins
   namespace: jenkins
@@ -20,7 +20,7 @@ rules:
 
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jenkins
   namespace: dev
@@ -40,7 +40,7 @@ rules:
 
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jenkins
   namespace: preprod
@@ -60,7 +60,7 @@ rules:
 
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jenkins
   namespace: prod
@@ -80,7 +80,7 @@ rules:
 
 ---
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jenkins-admin
   namespace: jenkins
