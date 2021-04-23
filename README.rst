@@ -78,7 +78,7 @@ And finally edit and create the hadolint configuration configmap to fine-tune th
 
 .. code:: bash
 
-  kubectl create cm hadolint-config-cm --from-file=hadolint.yaml=configmaps/components/hadolint.yaml
+  kubectl create cm hadolint-config-cm --from-file=hadolint.yaml=configmaps/components/hadolint.yaml -n jenkins
 
 4) Add all needed urls to a local DNS resolver.
 
@@ -97,6 +97,8 @@ If running in a local VM, setting them in /etc/hosts is sufficient.
 .. code:: bash
 
   kubectl apply -f k8s/components/registry-ingress-kubernetes.yaml -n kube-system
+
+Optionally, the ingress controller can also be installed and configured with `helm`_
 
 DEMO SETUP
 ==========
@@ -275,3 +277,4 @@ TODO
 
 .. _insecure: https://minikube.sigs.k8s.io/docs/tasks/registry/
 .. _openshift: https://github.com/mcaimi/k8s-demo-app/tree/master/openshift
+.. _helm: https://github.com/mcaimi/k8s-demo-app/tree/master/k8s/ingress-nginx-helm
