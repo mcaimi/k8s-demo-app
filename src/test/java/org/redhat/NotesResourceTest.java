@@ -15,6 +15,12 @@ import java.util.UUID;
 public class NotesResourceTest {
 
     @Test
+    public void testPrometheusMetrics() {
+        // test whether the metrics endpoint works
+        given().when().get("/q/metrics").then().statusCode(200);
+    }
+
+    @Test
     public void testGetAllEndpoint() {
         // list all, it should contain every row loaded with import.sql
         given().when().get("/notes/all").then().statusCode(200).body(containsString("test note 1"),

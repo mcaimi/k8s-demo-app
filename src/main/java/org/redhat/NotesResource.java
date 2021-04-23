@@ -18,8 +18,15 @@ import org.redhat.exceptions.MalformedNoteException;
 import org.redhat.exceptions.NoteExistsException;
 import org.redhat.exceptions.NoteNotExistsException;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
+
 @Path("/notes")
 public class NotesResource {
+
+    @Inject
+    MeterRegistry registry;
+
     @Inject
     NotesService noteService;
 
@@ -29,6 +36,8 @@ public class NotesResource {
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllNotes() {
+        registry.counter("notes_resource_getallnotes_call_count").increment();
+
         List<Note> results;
         
         try {
@@ -45,6 +54,8 @@ public class NotesResource {
     @Path("/{itemId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam Long itemId) {
+        registry.counter("notes_resource.getbyid_call_count", Tags.of("itemid", String.valueOf(itemId))).increment();
+
         LOGGER.info("Getting note with id [" + itemId + "] from the database.");
         Note foundNote = noteService.getNoteById(itemId);
         if (foundNote == null) {
@@ -57,6 +68,8 @@ public class NotesResource {
     @Path("/publish")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishNote(Note newNote) {
+        registry.counter("notes_resource_publishnote_call_count").increment();
+
         if (newNote.getId() != null) {
             LOGGER.error("Got a non null ID, this note is malformed.");
             return Response.status(500).build();
@@ -68,13 +81,16 @@ public class NotesResource {
             LOGGER.info("Publishing new note: " + newNote.getName());
             inserted = noteService.publishNote(newNote);
         } catch (NoteExistsException e) {
+            registry.counter("notes_resource_publishnote_exists_error_count").increment();
             LOGGER.error("Publish failed for note: " + newNote.getName() + "NOTE EXISTS.");
             return Response.status(500).build();
         } catch (MalformedNoteException e) {
+            registry.counter("notes_resource_publishnote_malformed_error_count").increment();
             LOGGER.error("Publish failed for note: " + newNote.getName());
             return Response.status(500).build();
         }
- 
+        
+        registry.counter("notes_resource_publishnote_call_ok_count").increment();
         return Response.ok(inserted.getId()).status(200).build();
     }
 
@@ -82,7 +98,9 @@ public class NotesResource {
     @Path("/{itemId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateNote(@PathParam Long itemId, Note updatedNote) {
+        registry.counter("notes_resource_updatenote_call_count").increment();
         if ((updatedNote.getContents() == null) || (updatedNote.getName() == null)) {
+            registry.counter("notes_resource_updatenote_id_error_count", Tags.of("itemid", String.valueOf(itemId))).increment();
             LOGGER.error("Missing updated Name or Contents, this note is malformed.");
             return Response.status(500).build();
         }
@@ -90,19 +108,23 @@ public class NotesResource {
         Note updated = noteService.updateNote(itemId, updatedNote);
         LOGGER.info("Updated note: " + updated.getId());
 
+        registry.counter("notes_resource_updatenote_id_ok_count", Tags.of("itemid", String.valueOf(itemId))).increment();
         return Response.ok(updated.getId()).status(200).build();
     }
 
     @DELETE
     @Path("/{itemId}")
     public Response deleteNote(@PathParam Long itemId) {
+        registry.counter("notes_resource_deletenote_call_count").increment();
         try {
             LOGGER.info("Deleting note: " + itemId);
             noteService.deleteNoteById(itemId);
         } catch(MalformedNoteException e) {
+            registry.counter("notes_resource_updatenote_id_malformed_error_count", Tags.of("itemid", String.valueOf(itemId))).increment();
             LOGGER.error("Delete failed for note: " + itemId);
             return Response.status(500).build();
         } catch (NoteNotExistsException e) {
+            registry.counter("notes_resource_updatenote_id_nonexisiting_id_count", Tags.of("itemid", String.valueOf(itemId))).increment();
             LOGGER.warn("Delete non-existing note failed for note: " + itemId);
             return Response.status(404).build();
         }
