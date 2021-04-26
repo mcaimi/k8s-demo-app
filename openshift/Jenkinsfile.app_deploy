@@ -1,6 +1,6 @@
 pipeline {
   parameters { 
-    string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The docker registry to push the image to')
+    string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000', description: 'The docker registry to push the image to')
     string(name: 'CI_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which the software image has been built')
     string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the built application container')
     string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the built application container')
