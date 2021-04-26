@@ -42,5 +42,5 @@ secretGenerator:
   - flyway_baseline_on_migrate=false
 images:
 - name: java-runner
-  newName: docker-registry.default.svc:5000/prod/java-runner
+  newName: image-registry.openshift-image-registry.svc:5000/prod/java-runner
   newTag: prod
