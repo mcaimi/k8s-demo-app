@@ -1,9 +1,4 @@
 resources:
-- java-runner-deploymentconfig.yaml
+- java-runner-deployment.yaml
 - java-runner-service.yaml
-- java-runner-route.yaml
-crds:
-  - crds/deploymentconfig.json
-  - crds/route.json
-configurations:
-  - crds/crd.yaml
+- java-runner-ingress.yaml
