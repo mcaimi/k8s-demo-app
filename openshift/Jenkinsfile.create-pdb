@@ -3,7 +3,7 @@ pipeline {
     string(name: 'DBENV', defaultValue: 'jenkins', description: 'The Database Environment to deploy the db into.')
     string(name: 'ACTION', defaultValue: 'deploy', description: 'The reuqested action on the Database Deployment. "deploy" or "undeploy" are permitted values')
     string(name: 'PARENT_BUILD_ID', defaultValue: '-001', description: 'Build ID of the caller pipeline')
-    string(name: 'REGISTRY_URL', defaultValue: 'docker-registry.default.svc:5000/jenkins', description: 'Image registry URL')
+    string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'Image registry URL')
   }
 
   agent {
