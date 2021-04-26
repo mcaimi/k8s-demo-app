@@ -40,3 +40,4 @@ start-kube.sh
 
 # secrets
 openshift/redhat-registry-pull-secret.yaml
+demo-password
