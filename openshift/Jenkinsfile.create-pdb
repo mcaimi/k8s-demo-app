@@ -52,8 +52,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "[${params.DBENV}] REMOVING DATABASE INSTANCE"
-          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kubectl delete -k openshift/deployments/pg${params.DBENV}/ > /tmp/template.yaml"
-          sh "oc delete -f /tmp/template.yaml"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kubectl delete -k openshift/deployments/pg${params.DBENV}/"
         }
       }
     }
