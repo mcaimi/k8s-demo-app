@@ -55,7 +55,7 @@ spec:
                 name: postgres-init-secret
                 key: postgres_app_user_password
           - name: PGDATA
-            value: "/var/lib/postgresql/data"
+            value: "/var/lib/postgresql/data/postgres"
         volumeMounts:
           - mountPath: "/var/lib/postgresql/data"
             name: postgres-data-volume
