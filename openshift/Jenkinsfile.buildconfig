@@ -1,6 +1,6 @@
 pipeline {
   parameters { 
-    string(name: 'REGISTRY_URL', defaultValue: 'docker-registry.default.svc:5000/jenkins', description: 'The docker registry to pull the image from')
+    string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The docker registry to pull the image from')
     string(name: 'AGENT_NAME', defaultValue: 'maven-agent', description: 'The name of the agent as found on the SCM')
     string(name: 'BUILDCONFIG_NAME', defaultValue: 'jenkins-maven-agent', description: 'The buildconfig name to trigger on OCP')
     string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The name of the Openshift cluster defined in Jenkins Settings')
@@ -77,7 +77,7 @@ spec:
       - name: DOCKER_HOST
         value: tcp://localhost:2375
     - name: hadolint
-      image: docker.io/hadolint/hadolint:latest
+      image: docker.io/hadolint/hadolint:latest-debian
       imagePullPolicy: Always
       command:
         - cat
@@ -89,7 +89,7 @@ spec:
   volumes:
     - name: hadolint-config
       configMap:
-        name: hadolint-config
+        name: hadolint-config-cm
         items:
         - key: hadolint.yaml
           path: hadolint.yaml
