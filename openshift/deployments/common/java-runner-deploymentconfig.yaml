@@ -121,7 +121,6 @@ spec:
         - containerPort: 8080
           protocol: TCP
         resources: {}
-      volumes: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
