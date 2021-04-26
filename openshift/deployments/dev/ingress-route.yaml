@@ -1,15 +1,23 @@
 ---
-apiVersion: route.openshift.io/v1
-kind: Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
     description: "Java Runner Route for Openshift Router"
+  name: java-runner
   labels:
     app: java-runner
-  name: java-runner-route
 spec:
-  host: k8s-demo-dev.apps.kubernetes.local
-  path: "/" 
-  to:
-    kind: Service
-    name: java-runner-service
+  rules:
+  - host: k8s-demo.apps.kubernetes.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: java-runner-service
+            port:
+              number: 80
+
