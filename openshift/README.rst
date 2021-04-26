@@ -104,12 +104,14 @@ differs slightly from the one that is run un K8S:
 
 The 'oc' binary has been added to the base maven-agent image.
 
+.. image:: img/openshift_jenkins.png
+
 In the 'prod' namespace, deployment configs and other object are **persistent**, so the first deploy needs to be manually performed:
 
 .. code:: bash
 
-  $ kubectl kustomize openshift/deployments/pgprod/ > /tmp/prod-postgres.yaml && oc apply -f /tmp/prod-postgres.yaml
-  $ kubectl kustomize openshift/deployments/prod/ > /tmp/prod-app.yaml && oc apply -f /tmp/prod-app.yaml
+  $ oc apply -k deployments/pgprod/
+  $ oc apply -k deployments/prod/
 
 The rollout afterwards will be handled by the last stage of the **Jenkinsfile.app_deploy** pipeline.
 
