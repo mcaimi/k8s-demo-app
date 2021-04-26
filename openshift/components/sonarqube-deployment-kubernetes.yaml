@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "standard"
+  storageClassName: "gp2"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,7 +21,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "standard"
+  storageClassName: "gp2"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -33,7 +33,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "standard"
+  storageClassName: "gp2"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -45,7 +45,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "standard"
+  storageClassName: "gp2"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -119,7 +119,7 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -131,9 +131,10 @@ spec:
   - host: sonar.apps.kubernetes.local
     http:
       paths:
-      - backend:
-          serviceName: sonarqube-service
-          servicePort: 90
-        path: /
-
-
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: sonarqube-service
+            port:
+              number: 90
