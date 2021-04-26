@@ -6,7 +6,7 @@ metadata:
   namespace: jenkins
 rules:
 - apiGroups: ["*"]
-  resources: ["builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
+  resources: ["deploymentconfigs", "builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -26,7 +26,7 @@ metadata:
   namespace: dev
 rules:
 - apiGroups: ["*"]
-  resources: ["builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
+  resources: ["deploymentconfigs", "builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -46,7 +46,7 @@ metadata:
   namespace: preprod
 rules:
 - apiGroups: ["*"]
-  resources: ["builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
+  resources: ["deploymentconfigs", "builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -66,7 +66,7 @@ metadata:
   namespace: prod
 rules:
 - apiGroups: ["*"]
-  resources: ["builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
+  resources: ["deploymentconfigs", "builds", "builds/log", "buildconfigs", "buildconfigs/instantiate", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "configmaps", "persistentvolumeclaims"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
@@ -86,7 +86,7 @@ metadata:
   namespace: jenkins
 rules:
 - apiGroups: ["*"]
-  resources: ["builds", "events", "buildconfigs", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "secrets", "configmaps"]
+  resources: ["deploymentconfigs", "builds", "events", "buildconfigs", "secrets", "imagestreams", "pods", "services", "deployments", "ingresses", "apps", "secrets", "configmaps"]
   verbs: ["create","delete","get","list","patch","update","watch"]
 - apiGroups: [""]
   resources: ["pods/exec"]
