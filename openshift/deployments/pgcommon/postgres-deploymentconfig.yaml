@@ -5,7 +5,6 @@ metadata:
   name: postgres
 spec:
   replicas: 1
-  triggers: {}
   strategy:
     type: Rolling
   paused: false
@@ -18,6 +17,8 @@ spec:
       labels:
         app: postgres
     spec:
+      serviceAccount: ci-jenkins
+      automountServiceAccountToken: true
       containers:
       - image: docker.io/library/postgres:latest
         imagePullPolicy: Always

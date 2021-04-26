@@ -5,7 +5,6 @@ metadata:
   name: java-runner
 spec:
   replicas: 1
-  triggers: {}
   strategy:
     type: Rolling
   paused: false
