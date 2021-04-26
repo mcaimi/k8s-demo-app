@@ -7,7 +7,7 @@ pipeline {
     string(name: 'SONAR_CREDS', defaultValue: 'jenkins-sonar', description: 'The Jenkins credentials to use when authenticating on SonarQube')
     string(name: 'SONAR_INSTALLATION', defaultValue: 'jenkins-sonar', description: 'The SonarQube installation name')
     string(name: 'BUILD_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which builds are performed')
-    string(name: 'REGISTRY_URL', defaultValue: 'docker-registry.default.svc:5000/jenkins', description: 'The image registry url')
+    string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The image registry url')
     string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The name of the Openshift cluster defined in Jenkins Settings')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
     string(name: 'DBUSER', defaultValue: 'hibernate', description: 'Username for the test db')
