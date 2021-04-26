@@ -2,3 +2,4 @@ resources:
 - java-runner-deployment.yaml
 - java-runner-service.yaml
 - java-runner-ingress.yaml
+- servicemonitor.yaml
