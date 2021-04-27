@@ -43,7 +43,8 @@ pipeline {
             string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
           ]
 
-          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && oc apply -k openshift/deployments/dev/"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
+          sh "kubectl apply -f /tmp/deployment-dev.yaml"
 
           echo "Monitoring Rollout (DEV)..."
           script {
@@ -69,7 +70,8 @@ pipeline {
               string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
             ]
 
-            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && oc delete -k openshift/deployments/dev/"
+            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
+            sh "kubectl delete -f /tmp/deployment-dev.yaml"
           }
           container("jnlp") {
             echo "UNTAGGING IMAGE FROM DEV ENVIRONMENT"
@@ -100,7 +102,8 @@ pipeline {
             string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
           ]
 
-          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && oc apply -k openshift/deployments/preprod/"
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
+          sh "kubectl apply -f /tmp/deployment-preprod.yaml"
 
           echo "Monitoring Rollout (PREPROD)..."
           script {
@@ -126,7 +129,9 @@ pipeline {
               string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
             ]
 
-            sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && oc delete -k openshift/deployments/preprod/"
+           sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
+           sh "kubectl delete -f /tmp/deployment-preprod.yaml"
+
           }
           container("jnlp") {
             echo "UNTAGGING IMAGE FROM PREPROD ENVIRONMENT"
@@ -149,7 +154,8 @@ pipeline {
           echo "CLEANING UP... (${env.BUILD_ID})"
 
           echo " -> Cleaning up application deployment in DEV ENVIRONMENT (${env.BUILD_ID})"
-          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && oc delete -k openshift/deployments/dev/"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
+          sh "kubectl delete -f /tmp/deployment-dev.yaml"
           echo " -> Cleaning up the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
           build job: 'postgres-database-pipeline', parameters: [
             string(name: 'DBENV', value: "dev"),
@@ -158,7 +164,8 @@ pipeline {
           ]
 
           echo " -> Cleaning up application deployment in PREPROD ENVIRONMENT (${env.BUILD_ID})"
-          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && oc delete -k openshift/deployments/preprod/"
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
+          sh "kubectl delete -f /tmp/deployment-preprod.yaml"
           echo " -> Cleaning up the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
           build job: 'postgres-database-pipeline', parameters: [
             string(name: 'DBENV', value: "preprod"),

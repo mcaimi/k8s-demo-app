@@ -32,14 +32,14 @@ pipeline {
         container("jnlp") {
           echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
           sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kubectl kustomize openshift/deployments/pg${params.DBENV}/ > /tmp/template.yaml"
-          sh "oc apply -f /tmp/template.yaml"
+          sh "kubectl apply -f /tmp/template.yaml"
         }
       }
       post {
         failure {
           container("jnlp") {
             echo "DEPLOYMENT FAILED, UNDEPLOY... (${env.BUILD_ID})"
-            sh "oc delete -f /tmp/template.yaml"
+            sh "kubectl delete -f /tmp/template.yaml"
           }
         }
       }
