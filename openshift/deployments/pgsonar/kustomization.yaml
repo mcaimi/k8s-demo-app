@@ -8,15 +8,9 @@ commonAnnotations:
   deployedBy: "operator"
   chain: "devops-tools"
   environment: "jenkins"
-patchesJson6902:
-- path: mem-sizing.yaml
-  target:
-    group: apps.openshift.io
-    version: v1
-    kind: DeploymentConfig
-    name: postgres
 patchesStrategicMerge:
 - storageclass.yaml
+- mem-sizing.yaml
 images:
 - name: postgres
   newName: docker.io/library/postgres

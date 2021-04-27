@@ -1,8 +1,4 @@
 resources:
   - postgres-volume.yaml
   - postgres-service.yaml
-  - postgres-deploymentconfig.yaml
-crds:
-  - crds/deploymentconfig.json
-configurations:
-  - crds/crd.yaml
+  - postgres-deployment.yaml
