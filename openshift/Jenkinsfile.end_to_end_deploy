@@ -227,12 +227,12 @@ def monitorRollout(String deployEnvironment, imageName, buildId, Boolean rollout
     def deploymentConfigName = "$deployEnvironment-$imageName-$buildId"
 
     if (rollout) {
-      openshift.selector('dc', deploymentConfigName).rollout().latest()
+      openshift.selector('deployment', deploymentConfigName).rollout().latest()
     }
 
     // Rollout monitoring
-    def latestVersion = openshift.selector('dc', deploymentConfigName).object().status.latestVersion
-    def replicationController = openshift.selector('rc', "$deploymentConfigName-${latestVersion}")
+    def latestVersion = openshift.selector('deployment', deploymentConfigName).object().status.latestVersion
+    def replicationController = openshift.selector('rs', "$deploymentConfigName-${latestVersion}")
 
     // wait for deployment completion
     timeout (time: 10, unit: 'MINUTES') {
