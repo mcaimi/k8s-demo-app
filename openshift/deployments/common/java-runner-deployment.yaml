@@ -13,9 +13,6 @@ spec:
       labels:
         app: java-runner
     spec:
-      metadata:
-        labels:
-          app: java-runner
       containers:
       - image: java-runner
         imagePullPolicy: Always
