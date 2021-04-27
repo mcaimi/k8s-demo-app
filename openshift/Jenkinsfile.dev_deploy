@@ -43,8 +43,7 @@ pipeline {
             string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
           ]
 
-          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kustomize build openshift/deployments/dev/ > /tmp/deployment.yaml"
-          sh "kubectl apply -f /tmp/deployment.yaml"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && /usr/local/bin/kustomize build openshift/deployments/dev/ | kubectl apply -f -"
 
           echo "Monitoring Rollout (DEV)..."
           script {
@@ -70,7 +69,7 @@ pipeline {
               string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
             ]
 
-            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kusttomize build openshift/deployments/dev/ | kubectl delete -f -"
+            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && /usr/local/bin/kustomize build openshift/deployments/dev/ | kubectl delete -f -"
           }
           container("jnlp") {
             echo "UNTAGGING IMAGE FROM DEV ENVIRONMENT"
