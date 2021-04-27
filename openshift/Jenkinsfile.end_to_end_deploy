@@ -43,7 +43,7 @@ pipeline {
             string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
           ]
 
-          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kustomize build openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
           sh "kubectl apply -f /tmp/deployment-dev.yaml"
 
           echo "Monitoring Rollout (DEV)..."
@@ -70,7 +70,7 @@ pipeline {
               string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
             ]
 
-            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
+            sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kustomize build openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
             sh "kubectl delete -f /tmp/deployment-dev.yaml"
           }
           container("jnlp") {
@@ -102,7 +102,7 @@ pipeline {
             string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
           ]
 
-          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kustomize build openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
           sh "kubectl apply -f /tmp/deployment-preprod.yaml"
 
           echo "Monitoring Rollout (PREPROD)..."
@@ -129,7 +129,7 @@ pipeline {
               string(name: 'PARENT_BUILD_ID', value: "${env.BUILD_ID}")
             ]
 
-           sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
+           sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kustomize build openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
            sh "kubectl delete -f /tmp/deployment-preprod.yaml"
 
           }
@@ -154,7 +154,7 @@ pipeline {
           echo "CLEANING UP... (${env.BUILD_ID})"
 
           echo " -> Cleaning up application deployment in DEV ENVIRONMENT (${env.BUILD_ID})"
-          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kubectl kustomize openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
+          sh "sed -i -e 's/NS_ID/dev/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/dev/kustomization.yaml && kustomize build openshift/deployments/dev/ > /tmp/deployment-dev.yaml"
           sh "kubectl delete -f /tmp/deployment-dev.yaml"
           echo " -> Cleaning up the Database Instance for DEV ENVIRONMENT (${env.BUILD_ID})"
           build job: 'postgres-database-pipeline', parameters: [
@@ -164,7 +164,7 @@ pipeline {
           ]
 
           echo " -> Cleaning up application deployment in PREPROD ENVIRONMENT (${env.BUILD_ID})"
-          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kubectl kustomize openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
+          sh "sed -i -e 's/NS_ID/preprod/' -e 's/BUILD_ID/${env.BUILD_ID}/' openshift/deployments/preprod/kustomization.yaml && kustomize build openshift/deployments/preprod/ > /tmp/deployment-preprod.yaml"
           sh "kubectl delete -f /tmp/deployment-preprod.yaml"
           echo " -> Cleaning up the Database Instance for PREPROD ENVIRONMENT (${env.BUILD_ID})"
           build job: 'postgres-database-pipeline', parameters: [

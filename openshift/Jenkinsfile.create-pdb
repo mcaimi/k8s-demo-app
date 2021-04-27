@@ -31,7 +31,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "[${params.DBENV}] DEPLOYING DATABASE INSTANCE"
-          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kubectl kustomize openshift/deployments/pg${params.DBENV}/ > /tmp/template.yaml"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kustomize build openshift/deployments/pg${params.DBENV}/ > /tmp/template.yaml"
           sh "kubectl apply -f /tmp/template.yaml"
         }
       }
@@ -52,7 +52,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "[${params.DBENV}] REMOVING DATABASE INSTANCE"
-          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kubectl delete -k openshift/deployments/pg${params.DBENV}/"
+          sh "sed -i -e 's/NS_ID/${params.DBENV}/' -e 's/BUILD_ID/${params.PARENT_BUILD_ID}/' openshift/deployments/pg${params.DBENV}/kustomization.yaml && kustomize build openshift/deployments/pg${params.DBENV}/ | kubectl delete -f -"
         }
       }
     }
