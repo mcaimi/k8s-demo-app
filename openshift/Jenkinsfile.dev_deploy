@@ -116,12 +116,11 @@ def monitorRollout(String deployEnvironment, imageName, buildId, Boolean rollout
     }
 
     // Rollout monitoring
-    def latestVersion = openshift.selector('deployment', deploymentConfigName).object().status.latestVersion
-    def replicationController = openshift.selector('rs', "$deploymentConfigName-${latestVersion}")
+    def deployment = openshift.selector('deployment', deploymentConfigName)
 
     // wait for deployment completion
     timeout (time: 10, unit: 'MINUTES') {
-      replicationController.untilEach(1){
+      deployment.untilEach(1){
           def rcMap = it.object()
           return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
         }
