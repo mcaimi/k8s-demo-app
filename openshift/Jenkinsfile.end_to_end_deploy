@@ -211,7 +211,7 @@ spec:
   containers:
     - name: jnlp
       image: URL_PLACEHOLDER/maven-agent:latest
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       env:
       - name: POD_IP
         valueFrom:

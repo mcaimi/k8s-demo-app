@@ -74,7 +74,7 @@ spec:
   containers:
     - name: jnlp
       image: REG_URL/maven-agent:latest
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       env:
       - name: POD_IP
         valueFrom:
