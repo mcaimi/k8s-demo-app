@@ -20,7 +20,7 @@ public class HelloResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
-        registry.counter("hello_resource_hello_count").increment();
+        registry.counter("hello.resource.hello.count").increment();
         return "hello";
     }
 
@@ -28,7 +28,7 @@ public class HelloResource {
     @Path("/{name}")
     @Produces(MediaType.TEXT_PLAIN)
     public String helloName(@PathParam String name) {
-        registry.counter("hello_resource_helloname_count", Tags.of("name", name)).increment();
+        registry.counter("hello.resource.helloname.count", Tags.of("name", name)).increment();
         return "Hello " + name + "!";
     }
 }

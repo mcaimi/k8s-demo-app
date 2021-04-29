@@ -22,7 +22,7 @@ public class TimeWasterResource {
     @Path("/delay/{milliseconds}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response wasteTime(@PathParam long milliseconds) throws InterruptedException {
-        registry.counter("time_resource_wastetime_count", Tags.of("milliseconds", String.valueOf(milliseconds))).increment();
+        registry.counter("time.resource.wastetime.count", Tags.of("milliseconds", String.valueOf(milliseconds))).increment();
         try {
             return Response.status(200).entity(timeWaster.wasteTime(milliseconds)).build();
         }
@@ -36,8 +36,8 @@ public class TimeWasterResource {
     @Path("/delay/{milliseconds}/{code}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response wasteTimeWithCode(@PathParam long milliseconds, @PathParam int code) throws InterruptedException {
-        registry.counter("time_resource_wastetime_code_millis_count", Tags.of("milliseconds", String.valueOf(milliseconds))).increment();
-        registry.counter("time_resource_wastetime_code_code_count", Tags.of("code", String.valueOf(code))).increment();
+        registry.counter("time.resource.wastetime.code.millis.count", Tags.of("milliseconds", String.valueOf(milliseconds))).increment();
+        registry.counter("time.resource.wastetime.code.code.count", Tags.of("code", String.valueOf(code))).increment();
         
         try {
             return Response.status(code).entity(timeWaster.wasteTime(milliseconds)).build();
