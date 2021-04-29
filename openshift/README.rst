@@ -100,7 +100,8 @@ differs slightly from the one that is run un K8S:
 
 - **Jenkinsfile.agent-builder and Jenkinsfile.java-runner** have been replaced with **Jenkinsfile.buildconfig**: this pipeline runs and monitors buildconfig runs through the use of the Openshift Pipeline Plugin in Jenkins
 - **Jenkinsfile.build-phase** now runs the image generation stage at the end of the pipeline (instead of leveraging another phase and another pipeline)
-- **Jenkinsfile.app_deploy** handles rollouts in production via the Openshift Client Plugin for Jenkins
+- **Jenkinsfile.dev_deploy** handles testing rollouts in dev environment via the Openshift Client Plugin for Jenkins
+- **Jenkinsfile.end_to_end_deploy** simulates promotion between environments with final approval for production rollout.
 
 The 'oc' binary has been added to the base maven-agent image.
 
@@ -113,15 +114,15 @@ In the 'prod' namespace, deployment configs and other object are **persistent**,
   $ oc apply -k deployments/pgprod/
   $ oc apply -k deployments/prod/
 
-The rollout afterwards will be handled by the last stage of the **Jenkinsfile.app_deploy** pipeline.
+The rollout afterwards will be handled by the last stage of the **Jenkinsfile.end_to_end_deploy** pipeline.
 
 Custom Templating
 -----------------
 
-Kustomize is a wonderful tool and it beats Templates hands down basically on every aspect. But as of now it does not support
-Kubernetes extensions such as OCP3.11 Routes and DeploymentConfigs.
+Templating is handled with **kustomize**. While it does not support custom CRs such as Openshift Routes and DeploymentConfigs, it can be patched by adding Custom Resources Definitions (CRDs) to the templates and by writing custom transformer rules.
+This branch is mostly free of custom CRs in order to be fully compatible with vanilla k8s, but in any case instructions on how to extend
+kustomize are reported here.
 
-Fortunately it can be patched by adding Custom Resources Definitions (CRDs) to the templates and by writing custom transformer rules.
 Look in the 'crds' folder in deployments/common and deployments/pgcommon.
 
 For example, to let Kustomize correctly patch the VolumeClaimName in the deploymentconfig:
@@ -204,7 +205,7 @@ More information about Kustomize and CRDs can be found a this_ link and in the o
 
 Also have a look at this commit_ as it gives insights on how CRDs are actually implemented in kustomize
 
-.. _here: https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html
+.. _here: https://docs.openshift.com/container-platform/4.7/authentication/managing-security-context-constraints.html
 .. _this: https://github.com/kubernetes-sigs/kustomize/blob/master/examples/transformerconfigs/crd/README.md
 .. _fields: https://github.com/kubernetes-sigs/kustomize/blob/master/docs/fields.md
 .. _commit: https://github.com/kubernetes-sigs/kustomize/pull/105/commits/ea001347765a64bb52b1856f8f4fccec82ebcd67
