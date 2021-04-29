@@ -65,11 +65,12 @@ public class NotesService {
     }
 
     @Transactional
-    public void deleteNoteById(Long id) throws NoteNotExistsException, MalformedNoteException {
+    public Note deleteNoteById(Long id) throws NoteNotExistsException, MalformedNoteException {
         Note fetched = getNoteById(id);
         if (fetched != null) {
             try {
                 deleteNote(fetched);
+                return fetched;
             } catch (MalformedNoteException e) {
                 throw new MalformedNoteException("Called method deleteNote() throwed exception:" + e.getMessage());
             }
