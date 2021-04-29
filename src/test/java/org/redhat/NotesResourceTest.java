@@ -134,7 +134,43 @@ public class NotesResourceTest {
                 not(containsString(newContents))
             );
         
+        // try to update a malformed note
+        given()
+            .pathParam("itemId", result.getBody().asString())
+            .when()
+            .body("{}").contentType("application/json")
+            .put("/notes/{itemId}")
+            .then()
+                .statusCode(500);
+ 
         // finally remove the note
+        given()
+            .pathParam("itemId", result.getBody().asString())
+            .when().delete("/notes/{itemId}")
+            .then()
+                .statusCode(200);
+    }
+
+
+    @Test
+    public void testInsertDeleteNote() {
+        // publish a new note
+        String newName = UUID.randomUUID().toString();
+        String newContents = UUID.randomUUID().toString();
+        String requestBody = "{\"name\": \"NAME_HOLDER\", \"contents\": \"CONTENT_HOLDER\"}";
+
+        // first, publish a note
+        Response result = given()
+                            .when()
+                            .body(requestBody
+                                .replace("NAME_HOLDER", newName)
+                                .replace("CONTENT_HOLDER", newContents)
+                            ).contentType("application/json")
+                            .post("/notes/publish")
+                            .then()
+                                .statusCode(200).extract().response();
+
+        // then delete the note
         given()
             .pathParam("itemId", result.getBody().asString())
             .when().delete("/notes/{itemId}")
