@@ -35,26 +35,18 @@ PREREQUISITES
 
 .. code:: bash
 
-  minikube start --cpus=4 --memory=8GB --disk-size=20G
+  minikube start --cpus=4 --memory=8GB --disk-size=20G --addons=registry,ingress
 
 If you are planning to run everything locally (eg. no secure Ingresses in place), add the url of the registry as an `insecure`_ source:
 
 .. code:: bash
 
-  minikube start --cpus=4 --memory=8GB --disk-size=20G --insecure-registry registry.apps.kubernetes.local 
-
-2) Enable all needed k8s addons (istio, helm are optional for the time being)
-
-.. code:: bash
-
-  for item in registry ingress istio-provisioner istio dashboard helm-tiller; do
-    minikube addons enable $item
-  done
+  minikube start --cpus=4 --memory=8GB --disk-size=20G --addons=ingress,registry --insecure-registry registry.apps.kubernetes.local
 
 Remember to add the url of the insecure registry to the registries.conf file on the host machine (/etc/containers/registries.conf)
 to add registry url to insecure registries on the local host machine
 
-3) Create the base namespaces that will be cosumed by the demo
+2) Create the base namespaces that will be cosumed by the demo
 
 .. code:: bash
 
@@ -80,7 +72,7 @@ And finally edit and create the hadolint configuration configmap to fine-tune th
 
   kubectl create cm hadolint-config-cm --from-file=hadolint.yaml=configmaps/components/hadolint.yaml -n jenkins
 
-4) Add all needed urls to a local DNS resolver.
+3) Add all needed urls to a local DNS resolver.
 
 The demo uses the '*.apps.kubernetes.local' DNS domain. All the following names must resolve to the IP of the minikube VM or to the IP of the
 ingress controller deployed in the environment:
@@ -92,7 +84,7 @@ ingress controller deployed in the environment:
 
 If running in a local VM, setting them in /etc/hosts is sufficient.
 
-5) Expose the registry with an Ingress Route:
+4) Expose the registry with an Ingress Route:
 
 .. code:: bash
 
