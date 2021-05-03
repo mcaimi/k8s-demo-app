@@ -83,7 +83,7 @@ spec:
       - name: DOCKER_HOST
         value: tcp://localhost:2375
     - name: hadolint
-      image: docker.io/hadolint/hadolint:latest
+      image: docker.io/hadolint/hadolint:latest-debian
       imagePullPolicy: Always
       command:
         - cat
