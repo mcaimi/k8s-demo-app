@@ -121,7 +121,7 @@ spec:
   volumes:
     - name: hadolint-config
       configMap:
-        name: hadolint-config
+        name: hadolint-config-cm
         items:
         - key: hadolint.yaml
           path: hadolint.yaml
