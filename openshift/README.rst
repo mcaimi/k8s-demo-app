@@ -87,6 +87,13 @@ Roles and RoleBindings are found under the openshift/components folder:
 
   kubectl apply -f openshift/components/jenkins-rolebinding.yaml
 
+#) Deploy buildconfigs manifests
+
+.. code:: bash
+
+  oc apply -f openshift/buildconfig/java-runner-buildconfig.yaml
+  oc apply -f openshift/buildconfig/maven-agent-buildconfig.yaml
+
 Difference in Pipelines
 -----------------------
 
@@ -115,6 +122,10 @@ In the 'prod' namespace, deployment configs and other object are **persistent**,
   $ oc apply -k deployments/prod/
 
 The rollout afterwards will be handled by the last stage of the **Jenkinsfile.end_to_end_deploy** pipeline.
+
+NOTE: The Openshift Plugin needs to be configured with a couple parameters (API endpoint, Default Project)
+
+.. image:: img/openshift_cluster_plugin.png
 
 Custom Templating
 -----------------
