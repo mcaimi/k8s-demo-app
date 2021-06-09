@@ -1,0 +1,59 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: centos-base
+spec:
+  imagePullPolicy: IfNotPresent
+  tags:
+  - annotations:
+      openshift.io/display-name: centos-base
+      openshift.io/imported-from: docker.io/library/centos:latest
+    from:
+      kind: DockerImage
+      name: 'docker.io/library/centos:latest'
+    importPolicy: {}
+    name: latest
+    referencePolicy:
+      type: ""
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: signature-agent
+spec:
+  tags:
+  - name: latest
+---
+
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: "signature-agent"
+spec:
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "signature-agent:latest"
+  source:
+    git:
+      uri: https://github.com/mcaimi/k8s-demo-app.git
+      ref: "master"
+#    sourceSecret:
+#      name: "buildbot-auth"
+    contextDir: "containers/signature-agent"
+  images:
+  - from:
+      kind: "ImageStreamTag"
+      name: "signature-agent:latest"
+  runPolicy: "Serial"
+  strategy:
+    dockerStrategy:
+      noCache: true
+      from:
+        kind: "ImageStreamTag"
+        name: "centos-base:latest"
+  triggers:
+    - type: "ImageChange"
+    - type: "ConfigChange"
+
