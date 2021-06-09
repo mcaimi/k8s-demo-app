@@ -5,7 +5,6 @@ pipeline {
     string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the built application container')
     string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the built application container')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
-    string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The configured Openshift Cluster to connect to')
   }
 
   agent {
@@ -48,9 +47,7 @@ pipeline {
 
           echo "Monitoring Rollout (DEV)..."
           script {
-            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}") {
-              monitorRollout("dev", "${params.IMAGE_NAME}", "${env.BUILD_ID}", false)
-            }
+            monitorRollout("dev", "${params.IMAGE_NAME}", "${env.BUILD_ID}", false)
           }
         }
         container("jnlp") {
@@ -107,9 +104,7 @@ pipeline {
 
           echo "Monitoring Rollout (PREPROD)..."
           script {
-            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}") {
-              monitorRollout("preprod", "${params.IMAGE_NAME}", "${env.BUILD_ID}", false)
-            }
+            monitorRollout("preprod", "${params.IMAGE_NAME}", "${env.BUILD_ID}", false)
           }
         }
         container("jnlp") {
@@ -186,9 +181,7 @@ pipeline {
           }
           echo "Rolling out DeploymentConfig to latest version.."
           script {
-            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}" ) {
-              monitorRollout("prod", "${params.IMAGE_NAME}", "latest", true)
-            }
+            monitorRollout("prod", "${params.IMAGE_NAME}", "latest", true)
           }
         }
       }
@@ -223,23 +216,15 @@ spec:
 }
 
 def monitorRollout(String deployEnvironment, imageName, buildId, Boolean rollout) {
-  openshift.withProject( deployEnvironment ) {
-    def deploymentConfigName = "$deployEnvironment-$imageName-$buildId"
+  def deploymentName = "$deployEnvironment-$imageName-$buildId"
 
-    if (rollout) {
-      openshift.selector('deployment', deploymentConfigName).rollout().latest()
-    }
+  if (rollout) {
+    sh "oc rollout restart -n ${deployEnvironment} deployment/${deploymentName}"
+  }
 
-    // Rollout monitoring
-    def deployment = openshift.selector('deployment', deploymentConfigName)
-
-    // wait for deployment completion
-    timeout (time: 10, unit: 'MINUTES') {
-      deployment.untilEach(1){
-          def rcMap = it.object()
-          return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
-        }
-    }
-
+  // Rollout monitoring
+  timeout (time: 10, unit: 'MINUTES') {
+    sh "oc rollout status -w deployment/${deploymentName} -n ${deployEnvironment}"
   }
 }
+
