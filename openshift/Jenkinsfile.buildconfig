@@ -3,7 +3,6 @@ pipeline {
     string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The docker registry to pull the image from')
     string(name: 'AGENT_NAME', defaultValue: 'maven-agent', description: 'The name of the agent as found on the SCM')
     string(name: 'BUILDCONFIG_NAME', defaultValue: 'jenkins-maven-agent', description: 'The buildconfig name to trigger on OCP')
-    string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The name of the Openshift cluster defined in Jenkins Settings')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
   }
 
@@ -37,18 +36,9 @@ pipeline {
     stage ("Start the MAVEN-AGENT BuildConfig on OCP") {
       steps {
         container("jnlp") {
-          script {
-            openshift.withCluster( "${params.OPENSHIFT_CLUSTER}" ) {
-              echo "Running job in ${openshift.cluster()}'s project: ${openshift.project()}"
-                openshift.withProject( 'jenkins' ) {
-                  def buildconfig = openshift.selector('bc', "${params.BUILDCONFIG_NAME}")
-                  def build = buildconfig.startBuild()
-                  build.logs('-f')
-              }
-            }
-          }
+            sh "oc start-build -F ${params.BUILDCONFIG_NAME}"
         }
-      }
+     }
     }
   }
 }
