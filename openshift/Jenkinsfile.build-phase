@@ -8,7 +8,6 @@ pipeline {
     string(name: 'SONAR_INSTALLATION', defaultValue: 'jenkins-sonar', description: 'The SonarQube installation name')
     string(name: 'BUILD_NAMESPACE', defaultValue: 'jenkins', description: 'The namespace in which builds are performed')
     string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The image registry url')
-    string(name: 'OPENSHIFT_CLUSTER', defaultValue: 'ocp', description: 'The name of the Openshift cluster defined in Jenkins Settings')
     string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
     string(name: 'DBUSER', defaultValue: 'hibernate', description: 'Username for the test db')
     string(name: 'DBPASS', defaultValue: 'hibernate', description: 'Password of the test user')
@@ -187,8 +186,7 @@ pipeline {
       steps {
         build job: 'ocp-buildconfig-handler', parameters: [
             string(name: 'AGENT_NAME', value: "java-runner"),
-            string(name: 'BUILDCONFIG_NAME', value: "jenkins-java-runner"),
-            string(name: 'OPENSHIFT_CLUSTER', value: "${params.OPENSHIFT_CLUSTER}"),
+            string(name: 'BUILDCONFIG_NAME', value: "java-runner"),
             string(name: 'SERVICE_ACCOUNT', value: "${params.SERVICE_ACCOUNT}"),
             string(name: 'REGISTRY_URL', value: "${params.REGISTRY_URL}")
           ]

@@ -113,6 +113,6 @@ def monitorRollout(String deployEnvironment, imageName, buildId, Boolean rollout
 
   // Rollout monitoring
   timeout (time: 10, unit: 'MINUTES') {
-    sh "oc rollout status -w deployment/$deploymentName} -n ${deployEnvironment}"
+    sh "oc rollout status -w deployment/${deploymentName} -n ${deployEnvironment}"
   }
 }
