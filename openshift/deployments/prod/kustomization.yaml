@@ -11,13 +11,7 @@ commonAnnotations:
   environment: "prod"
 patchesStrategicMerge:
 - ingress-route.yaml
-patchesJson6902:
-- path: mem-sizing.yaml
-  target:
-    group: apps.openshift.io
-    version: v1
-    kind: DeploymentConfig
-    name: java-runner
+- mem-sizing.yaml
 secretGenerator:
 - name: quarkus-init-secret
   literals:
