@@ -127,6 +127,24 @@ NOTE: The Openshift Plugin needs to be configured with a couple parameters (API 
 
 .. image:: img/openshift_cluster_plugin.png
 
+OPTIONAL: Image Signature
+-------------------------
+
+Openshift supports Image Signature verification for all container images stored in chosen registries.
+An example pipeline is provided that shows how to sign and upload both signature and signed image to their respective registries.
+Further information on how this process works and on how to deploy a working signature store can be found at this link_. This demo assumes that the OpenResty sigstore is already deployed and a keyring is installed as a secret in the 'jenkins' namespace:
+
+.. code:: bash
+
+  $ gpg --quick-gen-key
+  $ gpg --armor --output signingkeys/signer-pubkey.gpg --export <id@email.com>
+  $ gpg --armor --output signingkeys/signer-secretkey.gpg --export-private-key <id@email.com>
+  $ oc create secret generic --from-file=signer-pubkey.gpg=signingkeys/signer-pubkey.gpg --from-file=signer-secretkey.gpg=signingkeys/signer-secretkey.gpg gpg-keyring-secret
+
+A working docker registry is also needed. Follow the previous link to know how to configure Sonatype Nexus as a Docker Registry for this demo too.
+
+- **Jenkinsfile.sign** show a simple way to sign an image with a provided identity.
+
 Custom Templating
 -----------------
 
@@ -220,3 +238,4 @@ Also have a look at this commit_ as it gives insights on how CRDs are actually i
 .. _this: https://github.com/kubernetes-sigs/kustomize/blob/master/examples/transformerconfigs/crd/README.md
 .. _fields: https://github.com/kubernetes-sigs/kustomize/blob/master/docs/fields.md
 .. _commit: https://github.com/kubernetes-sigs/kustomize/pull/105/commits/ea001347765a64bb52b1856f8f4fccec82ebcd67
+.. _link: https://github.com/mcaimi/ocp4-signature-verification.git
