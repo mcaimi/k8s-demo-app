@@ -33,21 +33,15 @@ pipeline {
   stages {
     stage ("SIGN IMAGE AND UPLOAD TO REMOTE REGISTRY") {
       steps {
-        container('signature') {
+        container("signature") {
           echo "Importing Signing Identity Keyring..."
-          sh "id;pwd"
-          sh "gpg --import /home/signer/keystore/signer-pubkey.gpg" 
-          sh "gpg --import /home/signer/keystore/signer-secretkey.gpg"
+          sh "gpg --no-tty --trust-model always --batch --import /home/signer/keystore/signer-pubkey.gpg" 
+          sh "gpg --no-tty --trust-model always --batch --import /home/signer/keystore/signer-secretkey.gpg"
           echo "Uploading and signing image..."
-          sh('skopeo copy --dest-creds=$env.REPO_CREDENTIALS_USR:$env.REPO_CREDENTIALS_PSW --sign-by=${params.SIGNING_IDENTITY} ${params.REGISTRY_URL}/${params.SOURCE_IMAGE}:${params.SOURCE_TAG} ${params.DEST_REPO}/${params.DEST_IMAGE}:${params.DEST_TAG} >> signature-step-output.log')
-//            echo "Uploading image signature to signature server..."
-//            sh "find /var/lib/containers/sigstore -name signature-1 -exec /usr/local/bin/signature-upload.py --no-verify -r ${params.SIG_SERVER}/upload -a \{\} \; >> signature-step-output.log"
+          sh('skopeo copy --dest-creds=$env.REPO_CREDENTIALS_USR:$env.REPO_CREDENTIALS_PSW --sign-by=${params.SIGNING_IDENTITY} ${params.REGISTRY_URL}/${params.SOURCE_IMAGE}:${params.SOURCE_TAG} ${params.DEST_REPO}/${params.DEST_IMAGE}:${params.DEST_TAG}')
+//          echo "Uploading image signature to signature server..."
+//          sh "find /var/lib/containers/sigstore -name signature-1 -exec /usr/local/bin/signature-upload.py --no-verify -r ${params.SIG_SERVER}/upload -a \{\} \;"
         }
-      }
-      post {
-          always {
-              archiveArtifacts "signature-step-output.log"
-          }
       }
     }
 
@@ -85,8 +79,15 @@ spec:
     - name: signature
       image: URL_PLACEHOLDER/signature-agent:latest
       imagePullPolicy: Always
+      env:
+      - name: GPG_TTY
+        value: /dev/null
+      - name: GNUPGHOME
+        value: /home/signer/.gnupg
       command:
-        - cat
+        - tail
+        - -f
+        - /dev/null
       tty: true
       volumeMounts:
         - name: keyring
