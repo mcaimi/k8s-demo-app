@@ -1,0 +1,102 @@
+pipeline {
+  parameters { 
+    string(name: 'REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The docker registry to pull the image from')
+    string(name: 'SIG_SERVER', defaultValue: 'https://signature-server.apps.kubernetes.local', description: 'The API endpoint of the Signature server')
+    string(name: 'SOURCE_IMAGE', defaultValue: 'maven-agent', description: 'The name of the image to sign and copy')
+    string(name: 'SOURCE_TAG', defaultValue: 'latest', description: 'The source tag of the image to sign and copy')
+    string(name: 'DEST_REPO', defaultValue: 'nexus-registry.apps.kubernetes.local', description: 'The destination repo where to upload the signed container image')
+    string(name: 'DEST_IMAGE', defaultValue: 'nexus-registry.apps.kubernetes.local', description: 'The destination image name')
+    string(name: 'DEST_TAG', defaultValue: 'dev-signed', description: 'The destination image tag')
+    string(name: 'REPO_CREDS', defaultValue:'jenkins-nexus', description: 'Credentials that are used to authenticate to the docker repo')
+    string(name: 'SIGNING_IDENTITY', defaultValue: 'signer@redhat.com', description: 'The GPG identity that signs the target image')
+    string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
+  }
+
+  agent {
+    kubernetes {
+      label "jenkins-signer-agent"
+      defaultContainer "jnlp"
+      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}", "${params.REGISTRY_URL}")
+    }
+  }
+
+  environment {
+    // https://jenkins.io/doc/book/pipeline/jenkinsfile/#handling-credentials
+    REPO_CREDENTIALS = credentials("${params.REPO_CREDS}")
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  stages {
+    stage ("SIGN IMAGE AND UPLOAD TO REMOTE REGISTRY") {
+      steps {
+        container('signature') {
+          echo "Importing Signing Identity Keyring..."
+          sh "id;pwd"
+          sh "gpg --import /home/signer/keystore/signer-pubkey.gpg" 
+          sh "gpg --import /home/signer/keystore/signer-secretkey.gpg"
+          echo "Uploading and signing image..."
+          sh('skopeo copy --dest-creds=$env.REPO_CREDENTIALS_USR:$env.REPO_CREDENTIALS_PSW --sign-by=${params.SIGNING_IDENTITY} ${params.REGISTRY_URL}/${params.SOURCE_IMAGE}:${params.SOURCE_TAG} ${params.DEST_REPO}/${params.DEST_IMAGE}:${params.DEST_TAG} >> signature-step-output.log')
+//            echo "Uploading image signature to signature server..."
+//            sh "find /var/lib/containers/sigstore -name signature-1 -exec /usr/local/bin/signature-upload.py --no-verify -r ${params.SIG_SERVER}/upload -a \{\} \; >> signature-step-output.log"
+        }
+      }
+      post {
+          always {
+              archiveArtifacts "signature-step-output.log"
+          }
+      }
+    }
+
+    stage ("Start the MAVEN-AGENT BuildConfig on OCP") {
+      steps {
+        container("jnlp") {
+            echo "Image Signature Complete."
+        }
+     }
+    }
+  }
+}
+
+def k8sAgentPodYaml(serviceAccount, registryUrl) {
+  openshiftAgent = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: SA_NAME
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: URL_PLACEHOLDER/maven-agent:latest
+      imagePullPolicy: Always
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    - name: signature
+      image: URL_PLACEHOLDER/signature-agent:latest
+      imagePullPolicy: Always
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - name: keyring
+          mountPath: /home/signer/keyring
+  volumes:
+    - name: keyring
+      secret:
+        secretName: gpg-keyring-secret
+    """
+
+    return openshiftAgent.replaceAll(~/SA_NAME/, serviceAccount).replaceAll(~/URL_PLACEHOLDER/, registryUrl)
+}
+

@@ -38,6 +38,9 @@ release.properties
 # scripts
 start-kube.sh
 
+# keys
+*.gpg
+
 # secrets
 openshift/redhat-registry-pull-secret.yaml
 demo-password
