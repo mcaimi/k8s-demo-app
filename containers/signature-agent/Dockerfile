@@ -7,7 +7,7 @@ ENV uid 1001
 
 USER root
 RUN dnf update -y
-RUN dnf install -y maven git python3 python3-requests skopeo
+RUN dnf install -y maven git python3 python3-requests skopeo pinentry
 RUN git clone https://github.com/mcaimi/ocp4-signature-verification /tmp/gpg-sig && \
     cp /tmp/gpg-sig/clients/signature-upload.py /usr/local/bin/signature-upload.py && \
     chmod +x /usr/local/bin/signature-upload.py
