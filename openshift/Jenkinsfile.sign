@@ -5,7 +5,7 @@ pipeline {
     string(name: 'SOURCE_IMAGE', defaultValue: 'maven-agent', description: 'The name of the image to sign and copy')
     string(name: 'SOURCE_TAG', defaultValue: 'latest', description: 'The source tag of the image to sign and copy')
     string(name: 'DEST_REPO', defaultValue: 'nexus-registry.apps.kubernetes.local', description: 'The destination repo where to upload the signed container image')
-    string(name: 'DEST_IMAGE', defaultValue: 'nexus-registry.apps.kubernetes.local', description: 'The destination image name')
+    string(name: 'DEST_IMAGE', defaultValue: 'test-image', description: 'The destination image name')
     string(name: 'DEST_TAG', defaultValue: 'dev-signed', description: 'The destination image tag')
     string(name: 'REPO_CREDS', defaultValue:'jenkins-nexus', description: 'Credentials that are used to authenticate to the docker repo')
     string(name: 'SIGNING_IDENTITY', defaultValue: 'signer@redhat.com', description: 'The GPG identity that signs the target image')
@@ -35,13 +35,18 @@ pipeline {
       steps {
         container("jnlp") {
           echo "Importing Signing Identity Keyring..."
-          sh "gpg --no-tty --trust-model always --batch --import /home/jenkins/keyring/signer-pubkey.gpg" 
-          sh "gpg --no-tty --trust-model always --batch --import /home/jenkins/keyring/signer-secretkey.gpg"
+          sh "gpg --no-tty --trust-model always --batch --import /home/jenkins/keyring/signer-pubkey.gpg > signing-task.log" 
+          sh "gpg --no-tty --trust-model always --batch --import /home/jenkins/keyring/signer-secretkey.gpg >> signing-task.log"
           echo "Uploading and signing image..."
-          sh('skopeo copy --src-registry-token=`cat /var/run/secrets/kubernetes.io/serviceaccount/token` --src-tls-verify=false --dest-tls-verify=false --dest-creds=$REPO_CREDENTIALS_USR:$REPO_CREDENTIALS_PSW --sign-by=$SIGNING_IDENTITY docker://$REGISTRY_URL/$SOURCE_IMAGE:$SOURCE_TAG docker://$DEST_REPO/$DEST_IMAGE:$DEST_TAG')
-//          echo "Uploading image signature to signature server..."
-//          sh "find /var/lib/containers/sigstore -name signature-1 -exec /usr/local/bin/signature-upload.py --no-verify -r ${params.SIG_SERVER}/upload -a \{\} \;"
+          sh('skopeo copy --src-registry-token=`cat /var/run/secrets/kubernetes.io/serviceaccount/token` --src-tls-verify=false --dest-tls-verify=false --dest-creds=$REPO_CREDENTIALS_USR:$REPO_CREDENTIALS_PSW --sign-by=$SIGNING_IDENTITY docker://$REGISTRY_URL/$SOURCE_IMAGE:$SOURCE_TAG docker://$DEST_REPO/$DEST_IMAGE:$DEST_TAG >> signing-task.log')
+          echo "Uploading image signature to signature server..."
+          sh('find /home/jenkins/sigstore/ -name signature-1 -exec /usr/local/bin/signature-upload.py --no-verify -r $SIG_SERVER/upload -a \\{\\} \\; >> signing-task.log')
         }
+      }
+      post {
+          always {
+              archiveArtifacts "signing-task.log"
+          }
       }
     }
   }
