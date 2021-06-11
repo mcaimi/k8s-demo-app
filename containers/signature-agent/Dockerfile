@@ -25,13 +25,14 @@ RUN git clone https://github.com/mcaimi/ocp4-signature-verification /tmp/gpg-sig
     chmod +x /usr/local/bin/signature-upload.py
 
 COPY scripts/jenkins-agent /usr/local/bin/jenkins-agent
+COPY config/default.yaml /etc/containers/registries.d/default.yaml
 RUN chmod +x /usr/local/bin/jenkins-agent &&\
     ln -s /usr/local/bin/jenkins-agent /usr/local/bin/jenkins-slave
 
 ARG AGENT_WORKDIR=/home/${user}/agent
 USER ${user}
 ENV AGENT_WORKDIR=${AGENT_WORKDIR}
-RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR} && mkdir -p /home/${user}/keyring
+RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR} && mkdir -p /home/${user}/keyring && mkdir -p /home/${user}/sigstore
 
 VOLUME /home/${user}/.jenkins
 VOLUME /home/${user}/keyring

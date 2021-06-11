@@ -33,24 +33,16 @@ pipeline {
   stages {
     stage ("SIGN IMAGE AND UPLOAD TO REMOTE REGISTRY") {
       steps {
-        container("signature") {
+        container("jnlp") {
           echo "Importing Signing Identity Keyring..."
-          sh "gpg --no-tty --trust-model always --batch --import /home/signer/keystore/signer-pubkey.gpg" 
-          sh "gpg --no-tty --trust-model always --batch --import /home/signer/keystore/signer-secretkey.gpg"
+          sh "gpg --no-tty --trust-model always --batch --import /home/jenkins/keyring/signer-pubkey.gpg" 
+          sh "gpg --no-tty --trust-model always --batch --import /home/jenkins/keyring/signer-secretkey.gpg"
           echo "Uploading and signing image..."
-          sh('skopeo copy --dest-creds=$env.REPO_CREDENTIALS_USR:$env.REPO_CREDENTIALS_PSW --sign-by=${params.SIGNING_IDENTITY} ${params.REGISTRY_URL}/${params.SOURCE_IMAGE}:${params.SOURCE_TAG} ${params.DEST_REPO}/${params.DEST_IMAGE}:${params.DEST_TAG}')
+          sh('skopeo copy --src-registry-token=`cat /var/run/secrets/kubernetes.io/serviceaccount/token` --src-tls-verify=false --dest-tls-verify=false --dest-creds=$REPO_CREDENTIALS_USR:$REPO_CREDENTIALS_PSW --sign-by=$SIGNING_IDENTITY docker://$REGISTRY_URL/$SOURCE_IMAGE:$SOURCE_TAG docker://$DEST_REPO/$DEST_IMAGE:$DEST_TAG')
 //          echo "Uploading image signature to signature server..."
 //          sh "find /var/lib/containers/sigstore -name signature-1 -exec /usr/local/bin/signature-upload.py --no-verify -r ${params.SIG_SERVER}/upload -a \{\} \;"
         }
       }
-    }
-
-    stage ("Start the MAVEN-AGENT BuildConfig on OCP") {
-      steps {
-        container("jnlp") {
-            echo "Image Signature Complete."
-        }
-     }
     }
   }
 }
@@ -69,29 +61,18 @@ spec:
   automountServiceAccountToken: true
   containers:
     - name: jnlp
-      image: URL_PLACEHOLDER/maven-agent:latest
+      image: URL_PLACEHOLDER/signature-agent:latest
       imagePullPolicy: Always
       env:
       - name: POD_IP
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
-    - name: signature
-      image: URL_PLACEHOLDER/signature-agent:latest
-      imagePullPolicy: Always
-      env:
       - name: GPG_TTY
         value: /dev/null
-      - name: GNUPGHOME
-        value: /home/signer/.gnupg
-      command:
-        - tail
-        - -f
-        - /dev/null
-      tty: true
       volumeMounts:
         - name: keyring
-          mountPath: /home/signer/keyring
+          mountPath: /home/jenkins/keyring
   volumes:
     - name: keyring
       secret:
