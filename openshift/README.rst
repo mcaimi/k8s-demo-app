@@ -109,6 +109,7 @@ differs slightly from the one that is run un K8S:
 - **Jenkinsfile.build-phase** now runs the image generation stage at the end of the pipeline (instead of leveraging another phase and another pipeline)
 - **Jenkinsfile.dev_deploy** handles testing rollouts in dev environment via the Openshift Client Plugin for Jenkins
 - **Jenkinsfile.end_to_end_deploy** simulates promotion between environments with final approval for production rollout.
+- **Jenkinsfile.sign** optionally computes a cryptographic signature of the target built image before pushing it to the target docker registry.
 
 The 'oc' binary has been added to the base maven-agent image.
 
@@ -143,10 +144,20 @@ Further information on how this process works and on how to deploy a working sig
 
 A working docker registry is also needed. Follow the previous link to know how to configure Sonatype Nexus as a Docker Registry for this demo too.
 
-- **Jenkinsfile.sign** show a simple way to sign an image with a provided identity.
+- **Jenkinsfile.sign** show a simple way to sign an image with a provided identity, leveraging GnuPG and Skopeo under the hood.
+
+OPTIONAL: GitOps deployment via ArgoCD
+--------------------------------------
+
+An optional example of how a built application can be deployed via ArgoCD in a declarative "GitOps" fashion, have a look into the dedicated repository_.
+This repository assumes that:
+
+- The Jenkins pipelines only cover the CI part of the workflow (e.g. agent builds, software packaging, optional signature)
+- The approved target image in binary form is stored in an external registry (in this demo we use Nexus, but docker.io or quay.io are perfectly fine)
+- Signature is optional but in any case instructions listed at this link_ must be performed beforehand to configure the cluster.
 
 Custom Templating
------------------
+=================
 
 Templating is handled with **kustomize**. While it does not support custom CRs such as Openshift Routes and DeploymentConfigs, it can be patched by adding Custom Resources Definitions (CRDs) to the templates and by writing custom transformer rules.
 This branch is mostly free of custom CRs in order to be fully compatible with vanilla k8s, but in any case instructions on how to extend
@@ -239,3 +250,4 @@ Also have a look at this commit_ as it gives insights on how CRDs are actually i
 .. _fields: https://github.com/kubernetes-sigs/kustomize/blob/master/docs/fields.md
 .. _commit: https://github.com/kubernetes-sigs/kustomize/pull/105/commits/ea001347765a64bb52b1856f8f4fccec82ebcd67
 .. _link: https://github.com/mcaimi/ocp4-signature-verification.git
+.. _repository: https://github.com/mcaimi/k8s-demo-argocd.git
