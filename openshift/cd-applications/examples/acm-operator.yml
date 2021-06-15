@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: acm-operator
+  namespace: argocd
+spec:
+  destination:
+    server: 'https://kubernetes.default.svc'
+  project: ocp-day2
+  source:
+    path: 10-acm-operator/
+    repoURL: >-
+      ssh://git@gitlab.consulting.redhat.com:2222/gps-laboratory/k8s-resources.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: false
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true 
