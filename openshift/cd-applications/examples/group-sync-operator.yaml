@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    server: 'https://kubernetes.default.svc'
+    server: 'https://api.lab02.gpslab.club:6443'
   project: ocp-day2
   source:
     path: 03-group-sync-operator/

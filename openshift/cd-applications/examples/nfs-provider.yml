@@ -6,7 +6,7 @@ metadata:
 spec:
   destination:
     namespace: nfs-provisioner
-    server: 'https://kubernetes.default.svc'
+    server: 'https://api.lab02.gpslab.club:6443'
   source:
 #     repoURL: 'https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner'
 #     targetRevision: 4.0.4

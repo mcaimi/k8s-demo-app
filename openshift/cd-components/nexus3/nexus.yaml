@@ -2,7 +2,6 @@ apiVersion: apps.m88i.io/v1alpha1
 kind: Nexus
 metadata:
   name: nexus3
-  namespace: nexus
 spec:
   resources:
     limits:

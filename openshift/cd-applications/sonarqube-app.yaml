@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nexus3
+spec:
+  destination:
+    namespace: demo-app
+    server: 'https://api.lab02.gpslab.club:6443'
+  source:
+    path: openshift/cd-components/sonarqube
+    repoURL: 'https://github.com/thekoma/k8s-demo-app.git'
+    targetRevision: HEAD
+    helm: {}
+  project: demo-app
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: false

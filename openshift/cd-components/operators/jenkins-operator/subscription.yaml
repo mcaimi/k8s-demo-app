@@ -13,5 +13,3 @@ spec:
   source: redhat-operators
   sourceNamespace: openshift-marketplace
   startingCSV: jenkins-operator.0.7.1
-
-

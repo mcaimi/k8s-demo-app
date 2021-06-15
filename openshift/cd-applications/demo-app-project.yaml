@@ -2,14 +2,16 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: demo-app
-  namespace: demo-app
+  namespace: openshift-gitops
 spec:
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
   destinations:
-    - namespace: '*'
-      server: '*'
+    - namespace: 'demo-app'
+      server: 'https://api.lab02.gpslab.club:6443'
+    - namespace: 'openshift-operators'
+      server: 'https://api.lab02.gpslab.club:6443'
   sourceRepos:
     - '*'
 status: {}
