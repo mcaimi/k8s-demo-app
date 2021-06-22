@@ -73,14 +73,10 @@ spec:
         - cat
       tty: true
       volumeMounts:
-        - name: maven-agent
-          mountPath: /home/jenkins/agent
         - name: hadolint-config
           mountPath: /tmp/hadolint.yaml
           subPath: hadolint.yaml
   volumes:
-    - name: maven-agent
-      emptyDir: {}
     - name: hadolint-config
       configMap:
         name: hadolint-config-cm
