@@ -3,11 +3,12 @@ pipeline {
     string(name: 'REGISTRY_URL', defaultValue: 'registry.apps.kubernetes.local', description: 'The docker registry to push the image to') 
     string(name: 'BUILD_TAG', defaultValue: 'latest', description: 'The docker image label to tag the artifact with') 
     string(name: 'BUILD_NAME', defaultValue: 'agent-name', description: 'The name of the docker artifact to build') 
+    string(name: 'TLS_VERIFY', defaultValue: 'false', description: 'Validate target registry TLS certificate before pushing image.') 
   }
 
   agent {
     kubernetes {
-      label "jenkins-slave-dind"
+      label "jenkins-agent-buildah"
       defaultContainer "jnlp"
       yaml k8sAgentPodYaml()
     }
@@ -32,29 +33,20 @@ pipeline {
       }
     }
 
-    stage ("BUILD DOCKER IMAGE") {
+    stage ("BUILD CONTAINER IMAGE") {
       steps {
-        container("docker-in-docker") {
+        container("jnlp") {
           echo "BUILDING CONTAINER ${params.BUILD_NAME} (${env.BUILD_ID})"
-          sh "docker build -t ${params.BUILD_NAME}:${params.BUILD_TAG} containers/${BUILD_NAME}"
+          sh "buildah bud -t ${params.BUILD_NAME}:${params.BUILD_TAG} containers/${BUILD_NAME}"
         }
       }
     }
 
-    stage ("TAG CONTAINER") {
+    stage ("PUSH CONTAINER IMAGE") {
       steps {
-        container("docker-in-docker") {
-          echo "TAGGING CONTAINER: ${params.REGISTRY_URL}/${params.BUILD_NAME}:${params.BUILD_TAG} (${env.BUILD_ID})"
-          sh "docker tag ${params.BUILD_NAME}:${params.BUILD_TAG} ${params.REGISTRY_URL}/${params.BUILD_NAME}:${params.BUILD_TAG}"
-        }
-      }
-    }
-
-    stage ("PUSH CONTAINER") {
-      steps {
-        container("docker-in-docker") {
+        container("jnlp") {
           echo "PUSHING CONTAINER: ${params.REGISTRY_URL}/${params.BUILD_NAME}:${params.BUILD_TAG} (${env.BUILD_ID})"
-          sh "docker push ${params.REGISTRY_URL}/${params.BUILD_NAME}:${params.BUILD_TAG}"
+          sh "buildah push --tls-verify=${params.TLS_VERIFY} localhost/${params.BUILD_NAME}:${params.BUILD_TAG} docker://${params.REGISTRY_URL}/${params.BUILD_NAME}:${params.BUILD_TAG}"
         }
       }
     }
@@ -73,15 +65,15 @@ metadata:
 spec:
   containers:
     - name: jnlp
-      image: docker.io/jenkins/jnlp-slave:latest
+      image: docker.io/mcaimi/jenkins-agent-buildah:jdk8
       imagePullPolicy: Always
+      securityContext:
+        privileged: True
       env:
       - name: POD_IP
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
-      - name: DOCKER_HOST
-        value: tcp://localhost:2375
     - name: hadolint
       image: docker.io/hadolint/hadolint:latest-debian
       imagePullPolicy: Always
@@ -92,19 +84,6 @@ spec:
         - name: hadolint-config
           mountPath: /tmp/hadolint.yaml
           subPath: hadolint.yaml
-    - name: docker-in-docker
-      image: docker.io/library/docker:19.03.5-dind
-      securityContext:
-        privileged: true
-      volumeMounts:
-        - name: docker-registry-config
-          mountPath: /etc/docker/daemon.json
-          subPath: daemon.json
-        - name: docker-registry-config
-          mountPath: /etc/systemd/system/docker.service.d/50-insecure-registries.conf
-          subPath: 50-insecure-registries.conf
-        - name: dind-storage
-          mountPath: /var/lib/docker
   volumes:
     - name: hadolint-config
       configMap:
@@ -112,17 +91,7 @@ spec:
         items:
         - key: hadolint.yaml
           path: hadolint.yaml
-    - name: docker-registry-config
-      configMap:
-        name: insecure-registry-config
-        items:
-        - key: daemon.json
-          path: daemon.json
-        - key: 50-insecure-registries.conf
-          path: 50-insecure-registries.conf
-    - name: dind-storage
-      emptyDir: {}
-    """
+  """
 
     return dockerInDockerYaml
 }
