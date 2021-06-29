@@ -50,7 +50,7 @@ pipeline {
       steps {
         container("jnlp") {
           echo "BUILDING CONTAINER ${params.IMAGE_NAME} (${env.BUILD_ID})"
-          sh "buildah bud --build-arg nexus_auth=${env.NEXUS_CREDENTIALS} --build-arg nexus_repo_url=${params.NEXUS_URL} --build-arg artifact_name=${env.GROUP_ID}:${env.ARTIFACT_ID}:${env.VERSION} -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
+          sh 'buildah bud --build-arg nexus_auth=$NEXUS_USER:$NEXUS_PASS --build-arg nexus_repo_url=$NEXUS_URL --build-arg artifact_name=$GROUP_ID:$ARTIFACT_ID:$VERSION -t $IMAGE_NAME:$IMAGE_VERSION containers/$IMAGE_NAME'
         }
       }
     }
