@@ -5,11 +5,12 @@ pipeline {
     string(name: 'NEXUS_CREDS', defaultValue: 'jenkins-nexus', description: 'Credentials to use when connecting to Nexus (jenkins obkect name)')
     string(name: 'IMAGE_NAME', defaultValue: 'java-runner', description: 'The name of the built application container')
     string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'The version of the built application container')
+    string(name: 'TLS_VERIFY', defaultValue: 'false', description: 'Validate target registry TLS certificate before pushing image.') 
   }
 
   agent {
     kubernetes {
-      label "jenkins-slave-dind"
+      label "jenkins-agent-jrunner"
       defaultContainer "jnlp"
       yaml k8sAgentPodYaml("${params.REGISTRY_URL}")
     }
@@ -47,27 +48,18 @@ pipeline {
 
     stage ("BUILD DOCKER IMAGE") {
       steps {
-        container("docker-in-docker") {
+        container("jnlp") {
           echo "BUILDING CONTAINER ${params.IMAGE_NAME} (${env.BUILD_ID})"
-          sh "docker build --build-arg nexus_auth=${env.NEXUS_CREDENTIALS} --build-arg nexus_repo_url=${params.NEXUS_URL} --build-arg artifact_name=${env.GROUP_ID}:${env.ARTIFACT_ID}:${env.VERSION} -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
+          sh "buildah bud --build-arg nexus_auth=${env.NEXUS_CREDENTIALS} --build-arg nexus_repo_url=${params.NEXUS_URL} --build-arg artifact_name=${env.GROUP_ID}:${env.ARTIFACT_ID}:${env.VERSION} -t ${params.IMAGE_NAME}:${params.IMAGE_VERSION} containers/${IMAGE_NAME}"
         }
       }
     }
 
-    stage ("TAG APPLICATION CONTAINER IN CI") {
+    stage ("TAG AND PUSH APPLICATION CONTAINER IN CI") {
       steps {
-        container("docker-in-docker") {
-          echo "TAGGING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} (${env.BUILD_ID})"
-          sh "docker tag ${params.IMAGE_NAME}:${params.IMAGE_VERSION} ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
-        }
-      }
-    }
-
-    stage ("PUSH APPLICATION CONTAINER") {
-      steps {
-        container("docker-in-docker") {
+        container("jnlp") {
           echo "PUSHING CONTAINER: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} (${env.BUILD_ID})"
-          sh "docker push ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
+          sh "buildah push --tls-verify=${params.TLS_VERIFY} localhost/${params.IMAGE_NAME}:${params.IMAGE_VERSION} docker://${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
         }
       }
     }
@@ -86,15 +78,15 @@ metadata:
 spec:
   containers:
     - name: jnlp
-      image: URL_PLACEHOLDER/maven-agent:latest
+      image: docker.io/mcaimi/jenkins-agent-buildah:jdk8
       imagePullPolicy: Always
+      securityContext:
+        privileged: True
       env:
       - name: POD_IP
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
-      - name: DOCKER_HOST
-        value: tcp://localhost:2375
     - name: hadolint
       image: docker.io/hadolint/hadolint:latest-debian
       imagePullPolicy: Always
@@ -105,19 +97,6 @@ spec:
         - name: hadolint-config
           mountPath: /tmp/hadolint.yaml
           subPath: hadolint.yaml
-    - name: docker-in-docker
-      image: docker.io/library/docker:19.03.5-dind
-      securityContext:
-        privileged: true
-      volumeMounts:
-        - name: docker-registry-config
-          mountPath: /etc/docker/daemon.json
-          subPath: daemon.json
-        - name: docker-registry-config
-          mountPath: /etc/systemd/system/docker.service.d/50-insecure-registries.conf
-          subPath: 50-insecure-registries.conf
-        - name: dind-storage
-          mountPath: /var/lib/docker
   volumes:
     - name: hadolint-config
       configMap:
@@ -125,16 +104,6 @@ spec:
         items:
         - key: hadolint.yaml
           path: hadolint.yaml
-    - name: docker-registry-config
-      configMap:
-        name: insecure-registry-config
-        items:
-        - key: daemon.json
-          path: daemon.json
-        - key: 50-insecure-registries.conf
-          path: 50-insecure-registries.conf
-    - name: dind-storage
-      emptyDir: {}
     """
 
     return dockerInDockerYaml.replaceAll(~/URL_PLACEHOLDER/, registryUrl)
