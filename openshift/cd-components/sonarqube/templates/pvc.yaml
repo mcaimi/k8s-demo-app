@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-conf-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.pvc.conf.size }}"
+  storageClassName: "{{ .Values.pvc.conf.storageClassName }}"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-data-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.pvc.data.size }}"
+  storageClassName: "{{ .Values.pvc.data.storageClassName }}"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonar-extensions-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "{{ .Values.pvc.extensions.size }}"
+  storageClassName: "{{ .Values.pvc.extensions.storageClassName }}"
