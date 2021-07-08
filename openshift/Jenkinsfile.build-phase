@@ -56,7 +56,7 @@ pipeline {
   stages {
     stage ("MVN: PREPARE") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Preparing Maven Wrapper (${env.BUILD_ID})"
           sh "mvn -N io.takari:maven:wrapper"
         }
@@ -65,7 +65,7 @@ pipeline {
 
     stage ("MVN: BUILD") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Running maven build... (${env.BUILD_ID})"
           sh "./mvnw clean install -DskipTests"
         }
@@ -85,7 +85,7 @@ pipeline {
 
     stage ("MVN: UNIT TESTS") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Running maven tests... (${env.BUILD_ID}) DB ENDPOINT: ${env.DBHOST}"
           sh "./mvnw test"
           echo "Archiving test results in JUnit format... (${env.BUILD_ID})"
@@ -117,7 +117,7 @@ pipeline {
 
     stage ("MVN: CODE COVERAGE") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Running maven jacoco plugin... (${env.BUILD_ID})"
           sh "./mvnw jacoco:report"
           jacoco( 
@@ -132,7 +132,7 @@ pipeline {
 
     stage ("SONAR: SONARQUBE ANALYSIS") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Running maven sonarscanner... (${env.BUILD_ID})"
           withSonarQubeEnv(credentialsId: "${params.SONAR_CREDS}", installationName: "${params.SONAR_INSTALLATION}") {
             sh 'mvn sonar:sonar'
@@ -143,7 +143,7 @@ pipeline {
 
     stage ("SONAR: WAIT FOR QUALITY GATE") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Evaluating Code Quality Gate... (${env.BUILD_ID})"
           waitForQualityGate abortPipeline: true
         }
@@ -152,7 +152,7 @@ pipeline {
     
     stage ("MVN: PACKAGE") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           echo "Running maven package... (${env.BUILD_ID})"
           sh "./mvnw clean package -DskipTests"
         }
@@ -161,7 +161,7 @@ pipeline {
 
     stage ("NEXUS: PUBLISH TO REPOSITORY") {
       steps {
-        container('jnlp') {
+        container('jdk11') {
           nexusArtifactUploader(
             nexusVersion: "nexus3",
             protocol: "${params.NEXUS_PROTO}",
@@ -213,6 +213,12 @@ metadata:
     component: agent
 spec:
   containers:
+    - name: jdk11
+      image: docker.io/library/maven:latest
+      imagePullPolicy: IfNotPresent
+      command:
+        - cat
+      tty: true
     - name: jnlp
       image: URL_PLACEHOLDER/maven-agent:latest
       imagePullPolicy: IfNotPresent
