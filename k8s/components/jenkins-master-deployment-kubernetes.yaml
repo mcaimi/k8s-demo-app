@@ -27,7 +27,7 @@ spec:
         app: jenkins-master
     spec:
       containers:
-      - image: docker.io/jenkins/jenkins:latest
+      - image: docker.io/jenkins/jenkins:lts-jdk11
         imagePullPolicy: Always
         name: jenkins-master
         volumeMounts:
