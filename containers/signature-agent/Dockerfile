@@ -12,8 +12,7 @@ USER root
 RUN groupadd -g ${gid} ${group}
 RUN useradd -c "Jenkins user" -d /home/${user} -u ${uid} -g ${gid} -m ${user}
 
-RUN dnf update -y
-RUN dnf install -y java-1.8.0-openjdk git git-lfs python3 python3-requests skopeo pinentry
+RUN dnf update -y && dnf install -y java-11-openjdk-devel git git-lfs python3 python3-requests skopeo pinentry && dnf clean all
 
 RUN curl --create-dirs -fsSLo /usr/share/jenkins/agent.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${VERSION}/remoting-${VERSION}.jar \
   && chmod 755 /usr/share/jenkins \
@@ -32,6 +31,7 @@ RUN chmod +x /usr/local/bin/jenkins-agent &&\
 ARG AGENT_WORKDIR=/home/${user}/agent
 USER ${user}
 ENV AGENT_WORKDIR=${AGENT_WORKDIR}
+COPY scripts/bashrc /home/${user}/.bashrc
 RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR} && mkdir -p /home/${user}/keyring && mkdir -p /home/${user}/sigstore
 
 VOLUME /home/${user}/.jenkins
