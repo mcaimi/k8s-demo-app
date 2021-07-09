@@ -12,8 +12,7 @@ USER root
 RUN groupadd -g ${gid} ${group}
 RUN useradd -c "Jenkins user" -d /home/${user} -u ${uid} -g ${gid} -m ${user}
 
-RUN dnf update -y
-RUN dnf install -y java-1.8.0-openjdk git git-lfs buildah fuse-overlayfs
+RUN dnf update -y && dnf install -y java-1.8.0-openjdk git git-lfs buildah fuse-overlayfs && dnf clean all
 
 RUN curl --create-dirs -fsSLo /usr/share/jenkins/agent.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${VERSION}/remoting-${VERSION}.jar \
   && chmod 755 /usr/share/jenkins \
