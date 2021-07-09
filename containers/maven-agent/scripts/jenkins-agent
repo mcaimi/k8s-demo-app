@@ -35,6 +35,8 @@
 #                              the agent skips connecting to an HTTP(S) port for connection info.
 # * JENKINS_PROTOCOLS:         Specify the remoting protocols to attempt when instanceIdentity is provided.
 
+JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+
 if [ $# -eq 1 ]; then
 
 	# if `docker run` only has one arguments, we assume user is running alternate command like `bash` to inspect the image

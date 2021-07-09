@@ -12,7 +12,7 @@ USER root
 RUN groupadd -g ${gid} ${group}
 RUN useradd -c "Jenkins user" -d /home/${user} -u ${uid} -g ${gid} -m ${user}
 
-RUN dnf update -y && dnf install -y maven java-11-openjdk git
+RUN dnf update -y && dnf install -y maven java-11-openjdk-devel git && yum clean all
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
   && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
 RUN curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.7.0/openshift-client-linux.tar.gz && tar xzvf openshift-client-linux.tar.gz -C /tmp/ && mv /tmp/oc /usr/local/bin/oc
@@ -31,6 +31,7 @@ RUN chmod +x /usr/local/bin/jenkins-agent &&\
 ARG AGENT_WORKDIR=/home/${user}/agent
 USER ${user}
 ENV AGENT_WORKDIR=${AGENT_WORKDIR}
+COPY scripts/bashrc /home/${user}/.bashrc
 RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR}
 
 VOLUME /home/${user}/.jenkins
