@@ -135,7 +135,7 @@ pipeline {
         container('jnlp') {
           echo "Running maven sonarscanner... (${env.BUILD_ID})"
           withSonarQubeEnv(credentialsId: "${params.SONAR_CREDS}", installationName: "${params.SONAR_INSTALLATION}") {
-            sh 'mvn sonar:sonar'
+            sh "./mvnw sonar:sonar"
           }
         }
       }
