@@ -10,7 +10,7 @@ spec:
   resources:
     requests:
       storage: 8Gi
-  storageClassName: "gp2"
+  storageClassName: "thin"
 ---
 apiVersion: apps/v1
 kind: Deployment

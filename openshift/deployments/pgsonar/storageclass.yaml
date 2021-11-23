@@ -9,5 +9,5 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "gp2"
+  storageClassName: "thin"
 

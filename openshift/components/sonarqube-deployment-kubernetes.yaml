@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "gp2"
+  storageClassName: "thin"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,7 +21,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "gp2"
+  storageClassName: "thin"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -33,7 +33,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "gp2"
+  storageClassName: "thin"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -45,7 +45,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
-  storageClassName: "gp2"
+  storageClassName: "thin"
 ---
 apiVersion: apps/v1
 kind: Deployment
