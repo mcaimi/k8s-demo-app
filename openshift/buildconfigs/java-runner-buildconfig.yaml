@@ -38,7 +38,7 @@ spec:
   source:
     git:
       uri: https://github.com/mcaimi/k8s-demo-app.git
-      ref: "master"
+      ref: "vmware-thin"
 #    sourceSecret:
 #      name: "buildbot-auth"
     contextDir: "containers/java-runner"
