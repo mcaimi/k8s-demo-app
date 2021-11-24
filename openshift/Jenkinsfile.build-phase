@@ -52,13 +52,17 @@ pipeline {
     timeout(time: 1, unit: 'HOURS')
     timestamps()
   }
-  
+
   stages {
-    stage ("MVN: PREPARE") {
+    stage ("MVN: VERSION") {
       steps {
         container('jnlp') {
-          echo "Preparing Maven Wrapper (${env.BUILD_ID})"
-          sh "mvn -N io.takari:maven:wrapper"
+          echo "Running maven build... (${env.BUILD_ID})"
+          sh "whoami"
+          sh "echo $PWD"
+          sh "echo $JAVA_HOME"
+          sh "mvn -version"
+          sh "java -version"
         }
       }
     }
@@ -67,7 +71,7 @@ pipeline {
       steps {
         container('jnlp') {
           echo "Running maven build... (${env.BUILD_ID})"
-          sh "./mvnw clean install -DskipTests"
+          sh "mvn clean install -DskipTests"
         }
       }
     }
@@ -87,7 +91,7 @@ pipeline {
       steps {
         container('jnlp') {
           echo "Running maven tests... (${env.BUILD_ID}) DB ENDPOINT: ${env.DBHOST}"
-          sh "./mvnw test"
+          sh "mvn verify"
           echo "Archiving test results in JUnit format... (${env.BUILD_ID})"
           junit '**/target/surefire-reports/TEST-*.xml'
         }
@@ -119,8 +123,8 @@ pipeline {
       steps {
         container('jnlp') {
           echo "Running maven jacoco plugin... (${env.BUILD_ID})"
-          sh "./mvnw jacoco:report"
-          jacoco( 
+          sh "mvn jacoco:report"
+          jacoco(
                 execPattern: 'target/*.exec',
                 classPattern: 'target/classes',
                 sourcePattern: 'src/main/java',
@@ -135,7 +139,7 @@ pipeline {
         container('jnlp') {
           echo "Running maven sonarscanner... (${env.BUILD_ID})"
           withSonarQubeEnv(credentialsId: "${params.SONAR_CREDS}", installationName: "${params.SONAR_INSTALLATION}") {
-            sh "./mvnw sonar:sonar"
+            sh "mvn sonar:sonar"
           }
         }
       }
@@ -149,12 +153,12 @@ pipeline {
         }
       }
     }
-    
+
     stage ("MVN: PACKAGE") {
       steps {
         container('jnlp') {
           echo "Running maven package... (${env.BUILD_ID})"
-          sh "./mvnw clean package -DskipTests"
+          sh "mvn clean package -DskipTests"
         }
       }
     }
@@ -217,6 +221,8 @@ spec:
       image: URL_PLACEHOLDER/maven-agent:latest
       imagePullPolicy: Always
       env:
+      - name: JAVA_HOME
+        value: "/usr/lib/jvm/java-11-openjdk"
       - name: POD_IP
         valueFrom:
           fieldRef:
