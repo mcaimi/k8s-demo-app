@@ -1,0 +1,70 @@
+// to solve authentication issues, gran the system:image-pusher role to the ci-jenkins serviceaccount:
+// $ oc adm policy add-role-to-user system:image-pusher system:serviceaccount:jenkins:ci-jenkins -n jenkins
+
+pipeline {
+  parameters {
+    string(name: 'SOURCE_REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The docker registry to pull the image from')
+    string(name: 'SOURCE_IMAGE', defaultValue: 'maven-agent', description: 'The name of the image to sign and copy')
+    string(name: 'SOURCE_TAG', defaultValue: 'latest', description: 'The source tag of the image to sign and copy')
+    string(name: 'DEST_REGISTRY_URL', defaultValue: 'image-registry.openshift-image-registry.svc:5000/jenkins', description: 'The destination repo where to upload the signed container image')
+    string(name: 'DEST_IMAGE', defaultValue: 'test-image', description: 'The destination image name')
+    string(name: 'DEST_TAG', defaultValue: 'test-tag', description: 'The destination image tag')
+    string(name: 'SERVICE_ACCOUNT', defaultValue: 'ci-jenkins', description: 'Service Account to use when running the agent Pod')
+  }
+
+  agent {
+    kubernetes {
+      label "jenkins-skopeo-agent"
+      defaultContainer "jnlp"
+      yaml k8sAgentPodYaml("${params.SERVICE_ACCOUNT}")
+    }
+  }
+
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    timestamps()
+  }
+
+  stages {
+    stage ("COPY IMAGE FROM SOURCE REPO TO DESTINATION REPO (AUTH TRUE)") {
+      steps {
+        container("jnlp") {
+          echo "Uploading and image..."
+          sh('skopeo copy --dest-creds=openshift:`cat /var/run/secrets/kubernetes.io/serviceaccount/token` --src-tls-verify=false --dest-tls-verify=false docker://$SOURCE_REGISTRY_URL/$SOURCE_IMAGE:$SOURCE_TAG docker://$DEST_REGISTRY_URL/$DEST_IMAGE:$DEST_TAG >> copy-task.log')
+        }
+      }
+      post {
+          always {
+              archiveArtifacts "copy-task.log"
+          }
+      }
+    }
+  }
+}
+
+def k8sAgentPodYaml(serviceAccount) {
+  openshiftAgent = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/kube-default: true
+    app: jenkins
+    component: agent
+spec:
+  serviceAccountName: SA_NAME
+  automountServiceAccountToken: true
+  containers:
+    - name: jnlp
+      image: quay.io/marcocaimi/jenkins-agent-skopeo:centos-latest
+      imagePullPolicy: Always
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    """
+
+    return openshiftAgent.replaceAll(~/SA_NAME/, serviceAccount)
+}
+
