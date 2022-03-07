@@ -1,4 +1,4 @@
-FROM docker.io/library/centos:latest
+FROM quay.io/centos/centos:stream8
 LABEL maintainer=mcaimi@redhat.com
 LABEL agent=jenkins-slave-maven
 
@@ -15,8 +15,8 @@ RUN useradd -c "Jenkins user" -d /home/${user} -u ${uid} -g ${gid} -m ${user}
 RUN dnf update -y && dnf install -y maven java-11-openjdk-devel git && dnf clean all
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
   && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
-RUN curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.7.0/openshift-client-linux.tar.gz && tar xzvf openshift-client-linux.tar.gz -C /tmp/ && mv /tmp/oc /usr/local/bin/oc
-RUN curl -LO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_v4.1.2_linux_amd64.tar.gz && tar xzvf kustomize_v4.1.2_linux_amd64.tar.gz -C /tmp/ \
+RUN curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.9.11/openshift-client-linux.tar.gz && tar xzvf openshift-client-linux.tar.gz -C /tmp/ && mv /tmp/oc /usr/local/bin/oc
+RUN curl -LO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.2/kustomize_v4.5.2_linux_amd64.tar.gz && tar xzvf kustomize_v4.5.2_linux_amd64.tar.gz -C /tmp/ \
   && chmod +x /tmp/kustomize && mv /tmp/kustomize /usr/local/bin/kustomize
 
 RUN curl --create-dirs -fsSLo /usr/share/jenkins/agent.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${VERSION}/remoting-${VERSION}.jar \
