@@ -7,10 +7,10 @@ spec:
   tags:
   - annotations:
       openshift.io/display-name: centos-base
-      openshift.io/imported-from: docker.io/library/centos:latest
+      openshift.io/imported-from: quay.io/centos/centos:stream8
     from:
       kind: DockerImage
-      name: 'docker.io/library/centos:latest'
+      name: 'quay.io/centos/centos:stream8'
     importPolicy: {}
     name: latest
     referencePolicy:
