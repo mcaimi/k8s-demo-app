@@ -7,10 +7,10 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
-public class TimeWasterResourceTest {
+class TimeWasterResourceTest {
 
     @Test
-    public void testWasteTimeOKEndpoint() {
+    void testWasteTimeOKEndpoint() {
         given()
           .when().get("/services/delay/1000")
           .then()
@@ -19,7 +19,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testWasteTimeOKLongWaitEndpoint() {
+    void testWasteTimeOKLongWaitEndpoint() {
         given()
           .when().get("/services/delay/2500")
           .then()
@@ -28,7 +28,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testWasteTimeWithCodeOKEndpoint() {
+    void testWasteTimeWithCodeOKEndpoint() {
         given()
           .when().get("/services/delay/1000/200")
           .then()
@@ -37,7 +37,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testWasteTimeWithCodeNotFoundEndpoint() {
+    void testWasteTimeWithCodeNotFoundEndpoint() {
         given()
           .when().get("/services/delay/500/404")
           .then()
@@ -46,7 +46,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testWasteTimeWithCodeServerErrorEndpoint() {
+    void testWasteTimeWithCodeServerErrorEndpoint() {
         given()
           .when().get("/services/delay/2000/500")
           .then()
@@ -55,7 +55,7 @@ public class TimeWasterResourceTest {
     }
 
     @Test
-    public void testWasteTimeWithCodeOKLongWaitEndpoint() {
+    void testWasteTimeWithCodeOKLongWaitEndpoint() {
         given()
           .when().get("/services/delay/3000/200")
           .then()
