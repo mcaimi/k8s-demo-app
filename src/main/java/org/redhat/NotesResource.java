@@ -25,7 +25,7 @@ import io.micrometer.core.instrument.Timer;
 @Path("/notes")
 public class NotesResource {
 
-    private final String idName = "itemId";
+    private static final String idName = "itemId";
 
     @Inject
     MeterRegistry registry;
@@ -66,9 +66,8 @@ public class NotesResource {
 
         LOGGER.info("Getting note with id [" + itemId + "] from the database.");
         
-        Note foundNote = getByIdTimer.record(() -> {
-            return noteService.getNoteById(itemId);
-        });
+        Note foundNote = getByIdTimer.record(() -> noteService.getNoteById(itemId));
+
         if (foundNote == null) {
             return Response.status(404).build();
         }
@@ -124,9 +123,8 @@ public class NotesResource {
             return Response.status(500).build();
         }
         
-        Note updated = updateNoteTimer.record(() -> { 
-            return noteService.updateNote(itemId, updatedNote); 
-        });
+        Note updated = updateNoteTimer.record(() -> noteService.updateNote(itemId, updatedNote)); 
+
         LOGGER.info("Updated note: " + updated.getId());
 
         registry.counter("notes.resource.updatenote.id.ok.count", Tags.of(idName, String.valueOf(itemId))).increment();
