@@ -2,7 +2,7 @@ FROM quay.io/centos/centos:stream8
 LABEL maintainer=mcaimi@redhat.com
 LABEL agent=jenkins-slave-maven
 
-ARG VERSION=4.7
+ARG VERSION=4.13
 ARG user=jenkins
 ARG group=jenkins
 ARG uid=1000
@@ -29,11 +29,11 @@ RUN chmod +x /usr/local/bin/jenkins-agent &&\
     ln -s /usr/local/bin/jenkins-agent /usr/local/bin/jenkins-slave
 
 ARG AGENT_WORKDIR=/home/${user}/agent
-USER ${user}
 ENV AGENT_WORKDIR=${AGENT_WORKDIR}
 COPY scripts/bashrc /home/${user}/.bashrc
-RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR}
+RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR} && chown -Rv ${user}:${group} /home/${user}
 
+USER ${user}
 VOLUME /home/${user}/.jenkins
 VOLUME ${AGENT_WORKDIR}
 WORKDIR /home/${user}
