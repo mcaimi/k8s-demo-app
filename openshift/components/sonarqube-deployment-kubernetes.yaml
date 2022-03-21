@@ -63,7 +63,7 @@ spec:
         app: sonarqube
     spec:
       containers:
-      - image: docker.io/library/sonarqube:latest
+      - image: quay.io/marcocaimi/sonarqube:latest
         imagePullPolicy: Always
         name: sonarqube
         volumeMounts:
