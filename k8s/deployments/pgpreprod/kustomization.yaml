@@ -13,7 +13,7 @@ patchesStrategicMerge:
 - mem-sizing.yaml
 images:
 - name: postgres
-  newName: docker.io/library/postgres
+  newName: quay.io/marcocaimi/docker-postgres
   newTag: latest
 secretGenerator:
 - name: postgres-init-secret

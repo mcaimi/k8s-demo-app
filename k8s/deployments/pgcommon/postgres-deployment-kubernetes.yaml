@@ -26,7 +26,7 @@ spec:
         app: postgres
     spec:
       containers:
-      - image: docker.io/library/postgres:latest
+      - image: quay.io/marcocaimi/docker-postgres:latest
         imagePullPolicy: Always
         name: postgres
         env:

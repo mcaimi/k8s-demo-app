@@ -12,23 +12,23 @@ import java.util.Random;
 import java.util.UUID;
 
 @QuarkusTest
-public class NotesResourceTest {
+class NotesResourceTest {
 
     @Test
-    public void testPrometheusMetrics() {
+    void testPrometheusMetrics() {
         // test whether the metrics endpoint works
         given().when().get("/q/metrics").then().statusCode(200);
     }
 
     @Test
-    public void testGetAllEndpoint() {
+    void testGetAllEndpoint() {
         // list all, it should contain every row loaded with import.sql
         given().when().get("/notes/all").then().statusCode(200).body(containsString("test note 1"),
                 containsString("test note 2"), containsString("test note 3"), containsString("test note 4"));
     }
 
     @Test
-    public void testGetByIdEndpoint() {
+    void testGetByIdEndpoint() {
         // search for a specific ID
         Long noteId = new Long(1002);
         given().pathParam("itemId", noteId).when().get("/notes/{itemId}").then().statusCode(200)
@@ -36,7 +36,7 @@ public class NotesResourceTest {
     }
 
     @Test
-    public void testGetANonExistingNote() {
+    void testGetANonExistingNote() {
         Random rng = new Random();
         Long noteId = rng.nextLong();
 
@@ -45,7 +45,7 @@ public class NotesResourceTest {
     }
 
     @Test
-    public void testPublishEndpoint() {
+    void testPublishEndpoint() {
         // publish a new note
         String newName = UUID.randomUUID().toString();
         String newContents = UUID.randomUUID().toString();
@@ -82,7 +82,7 @@ public class NotesResourceTest {
     }
 
     @Test
-    public void testUpdateEndpoint() {
+    void testUpdateEndpoint() {
         // publish a new note
         String newName = UUID.randomUUID().toString();
         String newContents = UUID.randomUUID().toString();
@@ -153,7 +153,7 @@ public class NotesResourceTest {
 
 
     @Test
-    public void testInsertDeleteNote() {
+    void testInsertDeleteNote() {
         // publish a new note
         String newName = UUID.randomUUID().toString();
         String newContents = UUID.randomUUID().toString();
@@ -179,7 +179,7 @@ public class NotesResourceTest {
     }
 
     @Test
-    public void testDeleteANonExistingNote() {
+    void testDeleteANonExistingNote() {
         Random rng = new Random();
         Long noteId = rng.nextLong();
 
